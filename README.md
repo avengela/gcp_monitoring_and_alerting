@@ -50,7 +50,6 @@ The **startup.sh** file is a script that runs when each virtual machine in the p
 -installs Google Cloud Ops Agent by downloading the installation script and executing it,
 
 -configures the Ops Agent by creating necessary configuration files for logging and metric collection, 
-
 specifically forsyslog error, nginx access logs, host metrics.
 
 
