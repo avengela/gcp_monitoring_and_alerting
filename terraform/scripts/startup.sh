@@ -194,7 +194,7 @@ logging:
   processors:
     severity_filter:
       type: severity
-      severity_levels: ["ERROR"]
+      severity_levels: ["ERROR", "CRITICAL", "WARNING"]
 
   service:
     pipelines:

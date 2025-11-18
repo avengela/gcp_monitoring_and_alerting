@@ -26,7 +26,7 @@ resource "google_monitoring_alert_policy" "high_cpu" {
             }
         }
     }
-
+    severity = "WARNING"
     notification_channels = [google_monitoring_notification_channel.main_email.id]
 }
 
@@ -49,6 +49,7 @@ resource "google_monitoring_alert_policy" "high_memory" {
             }
         }
     }
+    severity = "WARNING"
     notification_channels = [google_monitoring_notification_channel.main_email.id]
 }
 
@@ -72,10 +73,32 @@ resource "google_monitoring_alert_policy" "uptime_failed" {
             }
         }
     }
-
+    severity = "ERROR"
     notification_channels = [google_monitoring_notification_channel.main_email.id]
 }
 
+resource "google_monitoring_alert_policy" "syslog_warning_spike"{
+  display_name = "Syslog Warning Spike"
+  combiner     = "OR"
+  enabled      = true
+
+  conditions {
+    display_name = "More than 10 syslog Warnings in 5 minutes"
+
+    condition_threshold {
+      filter = "metric.type=\"logging.googleapis.com/user/vm_warning_count\" AND resource.type=\"gce_instance\""
+      comparison      = "COMPARISON_GT"
+      threshold_value = 10        
+      duration        = "300s"
+
+      trigger {
+        count = 1
+      }
+    }
+  }
+    severity="CRITICAL"
+    notification_channels = [google_monitoring_notification_channel.main_email.id]
+}
 
 resource "google_monitoring_alert_policy" "syslog_error_spike"{
   display_name = "Syslog Error Spike"
@@ -83,19 +106,19 @@ resource "google_monitoring_alert_policy" "syslog_error_spike"{
   enabled      = true
 
   conditions {
-    display_name = "More than 1 syslog error within 1 minute"
+    display_name = "More than 5 syslog errors in 5 minutes"
 
     condition_threshold {
-      filter = "metric.type=\"logging.googleapis.com/user/syslog_error_count\" AND resource.type=\"gce_instance\""
+      filter = "metric.type=\"logging.googleapis.com/user/vm_error_count\" AND resource.type=\"gce_instance\""
       comparison      = "COMPARISON_GT"
-      threshold_value = 1        
-      duration        = "60s"    
+      threshold_value = 5        
+      duration        = "300s"
 
       trigger {
         count = 1
       }
     }
   }
-
+    severity="CRITICAL"
     notification_channels = [google_monitoring_notification_channel.main_email.id]
 }
