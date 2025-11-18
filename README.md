@@ -24,26 +24,26 @@ The following tools are used in this project:
 ## Creating the Environment
 In this project, a monitoring and alerting system is configured using Terraform.
 
-### **1. [variables.tf](terraform/variables.tf)**
+### [variables.tf](terraform/variables.tf)**
 The **variables.tf** file contains definitions that are used in other configuration files. 
 It includes variables for project ID, region, zone, machine type and alert notification data.
 
-### **2. [main.tf](terraform/main.tf)**
+### [main.tf](terraform/main.tf)**
 The **main.tf** file contains the basic Terraform configuration, 
 including the required versions of tools and the configuration of the Google Cloud provider, 
 which is used to manage resources in the cloud.
 
-### *3. [network.tf](terraform/network.tf)*
+### [network.tf](terraform/network.tf)*
 The **network.tf** file is responsible for configuring the network in Google Cloud, 
 including creating a virtual private network (VPC), 
 subnets and firewall rules (rule allowing HTTP access and rule allowing SSH access)
 
-### *4. [compute.tf](terraform/compute.tf)*
+### [compute.tf](terraform/compute.tf)*
 The **compute.tf** file defines the creation of 3 virtual machines on Google Compute Engine. 
 Each virtual machine is launched with a specified size and assigned role. 
 Additionally, a stratup script is executed on each machine.
 
-### **5. [startup.sh](terraform/scripts/startup.sh)** 
+### [startup.sh](terraform/scripts/startup.sh)** 
 The **startup.sh** file is a script that runs when each virtual machine in the project.
 
 ***It performs the following tasks:***
