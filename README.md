@@ -34,7 +34,6 @@ subnets and firewall rules (rule allowing HTTP access and rule allowing SSH acce
 
 ### *4. [compute.tf](terraform/compute.tf)*
 The **compute.tf** file defines the creation of 3 virtual machines on Google Compute Engine. 
-
 Each virtual machine is launched with a specified size and assigned role. 
 Additionally, a stratup script is executed on each machine.
 
@@ -58,12 +57,10 @@ specifically forsyslog error, nginx access logs, host metrics.
 
 ### **6. [uptime_check.tf](terraform/uptime_check.tf)** 
 The **uptime_check.tf** file configures uptime checks for virtual machines using HTTP. 
-
 It monitors the availability of machines by checking if they respond to HTTP requests every 60 seconds.
 
 ### **7. [monitoring_alerts.tf](terraform/monitoring_alerts.tf)**
 The **monitoring_alerts.tf** file is responsible for configuring alert policies in Google Cloud Monitoring. 
-
 These policies allow for detecting issues with virtual machines and sending immediate notifications (via email) if predefined thresholds are exceeded.
 
 1. **Alert for high CPU utilization**
@@ -80,7 +77,6 @@ In this case, a notification is also sent.
 5. **Alert for failed uptime check**
    
 This alert checks if virtual machines are available and responding to HTTP requests.
-
 If a machine fails the availability check for 3 minutes, a notification is triggered.
 
 7. **Alert for syslog error spikes**
