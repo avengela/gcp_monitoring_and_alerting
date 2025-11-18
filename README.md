@@ -25,7 +25,7 @@ The following tools are used in this project:
 In this project, a monitoring and alerting system is configured using Terraform.
 
 ### **1. [variables.tf](terraform/variables.tf)**
-The ** variables.tf ** file contains definitions that are used in other configuration files. 
+The **variables.tf** file contains definitions that are used in other configuration files. 
 It includes variables for project ID, region, zone, machine type and alert notification data.
 
 ### **2. [main.tf](terraform/main.tf)**
