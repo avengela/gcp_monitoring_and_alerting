@@ -40,11 +40,17 @@ The **startup.sh** file is a script that runs when each virtual machine in the p
 
 ***It performs the following tasks:***
 -installs nginx, curl and telnet to enable service monitoring and testing the availability of network services on the VM,
+
 -enables and restarts the nginx service, setting it up as a web server to serve the monitoring page,
+
 -creates a simple HTML page,
+
 -writes a simple "OK" message to /var/www/html/healthz, which is used for health checks to ensure the VM is up and running,
+
 -installs Google Cloud Ops Agent by downloading the installation script and executing it,
+
 -configures the Ops Agent by creating necessary configuration files for logging and metric collection, 
+
 specifically forsyslog error, nginx access logs, host metrics.
 
 
