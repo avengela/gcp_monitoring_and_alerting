@@ -24,26 +24,26 @@ The following tools are used in this project:
 ## Creating the Environment
 In this project, a monitoring and alerting system is configured using Terraform.
 
-### [variables.tf](terraform/variables.tf)**
+### [variables.tf](terraform/variables.tf)
 The **variables.tf** file contains definitions that are used in other configuration files. 
 It includes variables for project ID, region, zone, machine type and alert notification data.
 
-### [main.tf](terraform/main.tf)**
+### [main.tf](terraform/main.tf)
 The **main.tf** file contains the basic Terraform configuration, 
 including the required versions of tools and the configuration of the Google Cloud provider, 
 which is used to manage resources in the cloud.
 
-### [network.tf](terraform/network.tf)*
+### [network.tf](terraform/network.tf)
 The **network.tf** file is responsible for configuring the network in Google Cloud, 
 including creating a virtual private network (VPC), 
 subnets and firewall rules (rule allowing HTTP access and rule allowing SSH access)
 
-### [compute.tf](terraform/compute.tf)*
+### [compute.tf](terraform/compute.tf)
 The **compute.tf** file defines the creation of 3 virtual machines on Google Compute Engine. 
 Each virtual machine is launched with a specified size and assigned role. 
 Additionally, a stratup script is executed on each machine.
 
-### [startup.sh](terraform/scripts/startup.sh)** 
+### [startup.sh](terraform/scripts/startup.sh)
 The **startup.sh** file is a script that runs when each virtual machine in the project.
 
 ***It performs the following tasks:***
@@ -61,11 +61,11 @@ The **startup.sh** file is a script that runs when each virtual machine in the p
 specifically forsyslog error, nginx access logs, host metrics.
 
 
-### [uptime_check.tf](terraform/uptime_check.tf)** 
+### [uptime_check.tf](terraform/uptime_check.tf)
 The **uptime_check.tf** file configures uptime checks for virtual machines using HTTP. 
 It monitors the availability of machines by checking if they respond to HTTP requests every 60 seconds.
 
-### [monitoring_alerts.tf](terraform/monitoring_alerts.tf)**
+### [monitoring_alerts.tf](terraform/monitoring_alerts.tf)
 The **monitoring_alerts.tf** file is responsible for configuring alert policies in Google Cloud Monitoring. 
 These policies allow for detecting issues with virtual machines and sending immediate notifications (via email) if predefined thresholds are exceeded.
 
