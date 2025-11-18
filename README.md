@@ -8,11 +8,17 @@ monitoring their status, and responding to failures through alerts.
 
 ## Tools
 The following tools are used in this project:
+
 -**Compute Engine**
+
 -**Terraform**
+
 -**Google Cloud Provider**
+
 -**Cloud Monitoring** 
+
 -**Cloud Logging**
+
 -**Alerting Policies**
 
 ## Creating the Environment
