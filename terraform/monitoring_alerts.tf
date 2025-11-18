@@ -41,7 +41,7 @@ resource "google_monitoring_alert_policy" "high_memory" {
         condition_threshold {
             filter = "metric.type=\"agent.googleapis.com/memory/percent_used\" AND resource.type=\"gce_instance\""
             comparison = "COMPARISON_GT"
-            threshold_value = 42
+            threshold_value = 47
             duration = "120s"
 
             trigger {

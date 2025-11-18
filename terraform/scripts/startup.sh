@@ -17,7 +17,7 @@ sudo tee /var/www/html/index.html << EOF
 <p><strong>VM Hostname:</strong> $HOSTNAME</p> 
 <p><strong>VM IP Address:</strong> $(hostname -I)</p> 
 <p><strong>Application Version:</strong> V1</p> 
-<p>Pozdrawiamy Angelika i Natalka</p> 
+<p> Project LevelUp</p> 
 </body>
 </html>
 EOF
@@ -25,14 +25,22 @@ EOF
 echo "OK" > /var/www/html/healthz
 chmod -R 755 /var/www/html
 
+touch b
+echo "OK" > /var/www/html/healthz
+chmod -R 755 /var/www/html
 
-sudo curl -sS https://dl.google.com/cloudagents/add-google-cloud-ops-agent-repo.sh -o add-google-cloud-ops-agent-repo.sh
+touch c
+
+curl -sSO https://dl.google.com/cloudagents/add-google-cloud-ops-agent-repo.sh
 sudo bash add-google-cloud-ops-agent-repo.sh --also-install
+sudo apt list --installed | grep google-cloud-ops-agent
 
-sleep 15
+touch d
+
+cat /var/www/html/index.html > 2.txt
 
 sudo mkdir -p /etc/google-cloud-ops-agent/config.d
-
+touch e
 sudo bash -c 'cat << EOF > /etc/google-cloud-ops-agent/config.d/syslog-errors.yaml
 ---
 logging:
@@ -62,12 +70,34 @@ metrics:
         receivers: [hostmetrics]
 EOF'
 
+cat /var/www/html/index.html > 3.txt
+touch f
 
 sudo bash -c 'cat << EOF > /etc/google-cloud-ops-agent/config.yaml
 ---
 logging:
-  include_config_dirs:
-  - /etc/google-cloud-ops-agent/config.d
-EOF'
+  receivers:
+    nginx_access:
+      type: nginx_access
+      include_paths: 
+        - /var/log/nginx/access.log
+  service:
+    pipelines:
+      nginx_pipeline:
+        receivers: [nginx_access]
 
-sudo systemctl restart google-cloud-ops-agent
+metrics:
+  receivers:
+    hostmetrics:
+      type: hostmetrics
+  service:
+    pipelines:
+      default_pipeline:
+        receivers: [hostmetrics]
+EOF'
+touch g
+
+cat /var/www/html/index.html > 4.txt
+
+sudo service google-cloud-ops-agent restart
+touch h

@@ -1,5 +1,5 @@
 resource "google_compute_network" "vpc"{
-    name = "vpc-observability-2"
+    name = "vpc-observability"
     auto_create_subnetworks = false
 }
 
