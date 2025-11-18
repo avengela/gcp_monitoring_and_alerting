@@ -75,17 +75,17 @@ This alert detects when CPU usage on virtual machines exceeds 80% for 5 minutes.
 
 A notification is sent if this threshold is exceeded. 
 
-3. **Alert for high RAM utilization**
+2. **Alert for high RAM utilization**
    
 This alert triggers when RAM usage exceeds 47% for 2 minutes.
 In this case, a notification is also sent. 
 
-5. **Alert for failed uptime check**
+3. **Alert for failed uptime check**
    
 This alert checks if virtual machines are available and responding to HTTP requests.
 If a machine fails the availability check for 3 minutes, a notification is triggered.
 
-7. **Alert for syslog error spikes**
+4. **Alert for syslog error spikes**
    
 This policy monitors the logs of virtual machines for "ERROR"-type error in the syslog.
 If the numer of errors exceeds 1 within a minute, a notification is generated.
