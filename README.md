@@ -61,11 +61,11 @@ The **startup.sh** file is a script that runs when each virtual machine in the p
 specifically forsyslog error, nginx access logs, host metrics.
 
 
-### **6. [uptime_check.tf](terraform/uptime_check.tf)** 
+### [uptime_check.tf](terraform/uptime_check.tf)** 
 The **uptime_check.tf** file configures uptime checks for virtual machines using HTTP. 
 It monitors the availability of machines by checking if they respond to HTTP requests every 60 seconds.
 
-### **7. [monitoring_alerts.tf](terraform/monitoring_alerts.tf)**
+### [monitoring_alerts.tf](terraform/monitoring_alerts.tf)**
 The **monitoring_alerts.tf** file is responsible for configuring alert policies in Google Cloud Monitoring. 
 These policies allow for detecting issues with virtual machines and sending immediate notifications (via email) if predefined thresholds are exceeded.
 
