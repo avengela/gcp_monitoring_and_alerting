@@ -91,3 +91,30 @@ This policy monitors the logs of virtual machines for "ERROR"-type error in the 
 If the numer of errors exceeds 1 within a minute, a notification is generated.
 
 ## **Cloud Monitoring Dashboard Configuration (CPU, RAM, uptime)**
+
+The VM Full Monitoring Dashboard provides a centralized view of the key metrics and logs from all virtual machines in the project. It is organized into multiple widgets, each visualizing a different aspect of VM health and performance.
+
+Identified metrics are:
+1. **CPU Utilization per Instance**
+**Metric**: agent.googleapis.com/cpu/utilization
+**Purpose**: Shows how much CPU is actively used per VM.
+<img width="607" height="483" alt="image" src="https://github.com/user-attachments/assets/ef5df238-8550-4dd1-9434-1b3cd7eec1f8" />
+
+2. Used Memory % per Instance
+**Metric**: agent.googleapis.com/memory/percent_used
+**Purpose**: Visualizes the percentage of RAM used on each VM.
+<img width="612" height="477" alt="image" src="https://github.com/user-attachments/assets/72189f2e-251b-4e30-9866-d527682e0a64" />
+
+3. VM Uptime Check Status
+**Metric**: agent.googleapis.com/memory/percent_used
+**Purpose**: Visualizes the percentage of RAM used on each VM.
+<img width="597" height="471" alt="image" src="https://github.com/user-attachments/assets/6db3f885-e73c-4406-b741-efc46b6ecfc4" />
+
+5. Syslog Warning Count per VM
+**Metric**: agent.googleapis.com/memory/percent_used
+**Purpose**: Visualizes the percentage of RAM used on each VM.
+<img width="606" height="475" alt="image" src="https://github.com/user-attachments/assets/a05b488b-4d27-4e38-b4d0-f55a40629940" />
+
+6. Syslog Error Count per VM
+**Metric**: agent.googleapis.com/memory/percent_used
+**Purpose**: Visualizes the percentage of RAM used on each VM.
