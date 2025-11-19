@@ -110,11 +110,11 @@ Identified metrics are:
 **Purpose**: Visualizes the percentage of RAM used on each VM.
 <img width="597" height="471" alt="image" src="https://github.com/user-attachments/assets/6db3f885-e73c-4406-b741-efc46b6ecfc4" />
 
-5. Syslog Warning Count per VM
+4. Syslog Warning Count per VM
 **Metric**: agent.googleapis.com/memory/percent_used
 **Purpose**: Visualizes the percentage of RAM used on each VM.
 <img width="606" height="475" alt="image" src="https://github.com/user-attachments/assets/a05b488b-4d27-4e38-b4d0-f55a40629940" />
 
-6. Syslog Error Count per VM
+5. Syslog Error Count per VM
 **Metric**: agent.googleapis.com/memory/percent_used
 **Purpose**: Visualizes the percentage of RAM used on each VM.
