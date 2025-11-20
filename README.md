@@ -240,5 +240,6 @@ fallocate -l 8G /tmp/testfile1
 <br><br><img width="681" height="643" alt="image" src="https://github.com/user-attachments/assets/689a07b6-d52f-4448-8f79-a017307e9908" />
 
 <br>Shortly after, a recovery alert was sent once the test file was removed and disk usage dropped below the threshold.
-<br><br><img width="679" height="602" alt="image" src="https://github.com/user-attachments/assets/3fbcdd9a-9e74-4bcc-bcb3-56f420e699c5" />
+<br><br><img width="729" height="610" alt="image" src="https://github.com/user-attachments/assets/f99bf07f-c03d-4b73-bf1c-6ea8c821871e" />
+
 
