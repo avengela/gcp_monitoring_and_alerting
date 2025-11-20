@@ -232,7 +232,8 @@ fallocate -l 8G /tmp/testfile1
 <br>A visible spike in disk usage appeared on the dashboard at the time of code execution. For this alert to be triggered, the disk usage must exceed the threshold for at least 1 minute.
 <br><br><img width="1139" height="480" alt="image" src="https://github.com/user-attachments/assets/034a65db-0669-4a9e-a2ab-9bb53f341fe0" />
 <br><br>Disk usage decreased to normal levels after the test file was removed.
-<br><br><img width="1138" height="493" alt="image" src="https://github.com/user-attachments/assets/48f8f8c0-217e-47b2-aa79-36243834ab38" />
+<br><br><img width="1153" height="612" alt="image" src="https://github.com/user-attachments/assets/56ff4620-8834-4367-80d2-0bb92741400b" />
+
 
 
 <br>**Received emails**:
