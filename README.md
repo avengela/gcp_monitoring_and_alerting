@@ -128,6 +128,7 @@ provider "google"{
 ```
 
 **Service Account**
+
 A service account is created and assigned to the project. 
 This account will be used by the virtual machines to access Google Cloud resources, such as logs and metrics.
 
@@ -139,6 +140,7 @@ resource "google_service_account" "vm_service_account" {
 }
 ```
 **Enabling KMS API**
+
 This enables the Key Management Service (KMS) API, which allows managing encryption keys in Google Cloud. 
 KMS will be used for data encryption, ensuring data security in the cloud.
 
@@ -150,6 +152,7 @@ resource "google_project_service" "kms_api" {
 }
 ```
 **Enabling OS Login**
+
 The OS Login service is enabled, allowing login to virtual machines using IAM credentials, eliminating the need to manage traditional SSH keys.
 
 ```bash
@@ -247,6 +250,7 @@ The **startup.sh** file is a script that runs on each virtual machine. It instal
 It also creates an HTML file for the monitoring page. Additionally, the script installs the Google Cloud Ops agent and configures it to collect metrics and logs.
 
 **System Update and Package Installation**
+
 The script starts by updating the system and installing the necessary packages to monitor the availability of virtual machines. 
 The nginx, curl, and telnet packages allow testing network connections and application availability.
 
@@ -257,6 +261,7 @@ apt-get install -y nginx curl telnet
 ```
 
 **Starting and Configuring Nginx**
+
 This part of the script starts the Nginx service, configures it to start automatically on system boot, and then restarts the service to ensure it is working correctly.
 
 ```bash
@@ -265,6 +270,7 @@ systemctl restart nginx
 ```
 
 **Creating the healthz File**
+
 The healthz file is created and will be used to test the availability of the virtual machine. 
 This file is used by monitoring mechanisms to check if the machine is running properly.
 
@@ -336,7 +342,7 @@ EOF'
 sudo service google-cloud-ops-agent restart
 ```
 
-### iam.tf](terraform/iam.tf)
+### [iam.tf](terraform/iam.tf)
 The **iam.tf** file configures the appropriate IAM permissions for the virtual machine's service account and the OS Login user. 
 The virtual machine's service account is granted roles that allow it to write logs and metrics to Google Cloud, 
 while the OS Login user is granted access to the virtual machines.
@@ -362,7 +368,8 @@ resource "google_project_iam_member" "monitoring_metric_writer" {
     role = "roles/monitoring.metricWriter"
 }
 ```
-These roles enable secure access to the VMs through OS Login. The osLogin_user role allows regular users to log in, while the osLogin_admin role provides administrative access. 
+These roles enable secure access to the VMs through OS Login. 
+The osLogin_user role allows regular users to log in, while the osLogin_admin role provides administrative access. 
 This eliminates the need to manage SSH keys manually:
 
 ```bash
@@ -408,6 +415,7 @@ The **monitoring_alerts.tf** file is responsible for configuring alert policies 
 These policies allow for detecting issues with virtual machines and sending immediate notifications (via email) if predefined thresholds are exceeded.
 
 **Google Monitoring Notification Channel**
+
 Before discussing the specific alerts, it is important to explain the google_monitoring_notification_channel resource. 
 This resource configures the notification channel that will be used by alerts to send notifications (e.g., by email).
 
@@ -424,6 +432,7 @@ resource "google_monitoring_notification_channel" "main_email" {
 #### Alerts
 
 1. **High CPU Utilization Alert**
+   
 This alert detects when CPU usage on virtual machines exceeds 80% for 5 minutes. 
 A notification is sent when this threshold is exceeded.
 
@@ -453,6 +462,7 @@ resource "google_monitoring_alert_policy" "high_cpu" {
 ```
 
 2. **High RAM Utilization Alert**
+   
 This alert triggers when RAM usage exceeds 70% for 2 minutes. 
 A notification is also sent when this threshold is exceeded.
 
@@ -509,6 +519,7 @@ resource "google_monitoring_alert_policy" "uptime_failed" {
 }
 ```
 4. **High Disk Usage Alert**
+   
 This alert monitors disk usage on virtual machines and triggers a notification when disk usage exceeds 80%.
 
 ```bash
@@ -594,6 +605,7 @@ resource "google_monitoring_dashboard" "vm_full_dashboard" {
 ```
 
 **CPU Utilization per VM Widget**
+
 This widget monitors the CPU utilization per VM. It displays CPU usage (excluding idle time) for each VM over time.
 
 ```bash
@@ -629,6 +641,7 @@ This widget monitors the CPU utilization per VM. It displays CPU usage (excludin
         },
 ```
 **RAM Usage per VM Widget**
+
 This widget displays the RAM usage per VM. It tracks the percentage of RAM used on each VM. 
 
 ```bash
@@ -664,6 +677,7 @@ This widget displays the RAM usage per VM. It tracks the percentage of RAM used 
         },
 ```
 **Uptime Check Status per VM Widget**
+
 This widget monitors the uptime check status per VM. It tracks whether the VM is responding to the health check.
 
 ```bash
@@ -698,6 +712,7 @@ This widget monitors the uptime check status per VM. It tracks whether the VM is
         },
 ```
 **Disk Usage per VM Widget**
+
 This widget monitors the disk usage per VM for the /dev/sda1 partition. It tracks how much of the disk space is udes on each VM. 
 
 ```bash
