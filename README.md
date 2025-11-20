@@ -6,84 +6,47 @@ The project involves creating a test environment in Google Cloud with several vi
 monitoring their status, and responding to failures through alerts.
 
 ## Architecture
+```
 Terraform
-
 │
-
 ├── Network
-
 │     ├── VPC
-
 │     ├── Subnet 10.10.0.0/24
-
 │     └── Firewall
-
 │            ├── allow-http (80)
-
 │            └── allow-ssh (22)
-
 │
-
 ├── Compute Engine (3× VM)
-
 │     ├── Debian 12
-
 │     ├── KMS-encrypted disk
-
 │     ├── Service Account
-
 │     └── Startup Script
-
 │            ├── Nginx + /healthz
-
 │            ├── HTML dashboard
-
 │            └── Ops Agent (metrics + logs)
-
 │
-
 ├── IAM
-
 │     ├── logging.logWriter
-
 │     ├── monitoring.metricWriter 
-
 │     ├── compute.osLogin 
-
 │     └── compute.osAdminLogin 
-
 │
-
 ├── KMS
-
 │     ├── Key Ring: vm-key-ring-1
-
 │     └── Crypto Key: vm-disk-key
-
 │
-
 ├── Monitoring
-
 │     ├── Dashboard
-
 │     ├── Uptime Checks (per VM)
-
 │     └── Alert Policies
-
 │           ├── High CPU (>80%)
-
 │           ├── High RAM (>70%)
-
 │           ├── High Disk (>80%)
-
 │           └── Uptime Failed
-
 │
-
 └── Notification Channel
-
       └── Email → var.email_name
-
+```
       
 ## Creating the Environment
 In this project, a monitoring and alerting system is configured using Terraform.
@@ -140,7 +103,7 @@ including the tool version, Google Cloud provider configuration and resources th
 
 This fragment sets the version requirements for Terraform and the Google Cloud provider:
 
-```
+```bash
 terraform {
     required_version = ">= 1.5.0"
 
@@ -155,7 +118,8 @@ terraform {
 **Google Cloud Provider**
 
 In this section, configuration data for the Google Cloud provider is specified, such as the project ID, region, and zone, where resources will be created.
-```
+
+```bash
 provider "google"{
     project = var.project_id 
     region = var.region
@@ -166,7 +130,8 @@ provider "google"{
 **Service Account**
 A service account is created and assigned to the project. 
 This account will be used by the virtual machines to access Google Cloud resources, such as logs and metrics.
-```
+
+```bash
 resource "google_service_account" "vm_service_account" {
     account_id = "vm-service-account"
     display_name = "VM Service Account"
@@ -177,7 +142,7 @@ resource "google_service_account" "vm_service_account" {
 This enables the Key Management Service (KMS) API, which allows managing encryption keys in Google Cloud. 
 KMS will be used for data encryption, ensuring data security in the cloud.
 
-```
+```bash
 resource "google_project_service" "kms_api" {
     project = var.project_id
     service = "cloudkms.googleapis.com"
@@ -187,7 +152,7 @@ resource "google_project_service" "kms_api" {
 **Enabling OS Login**
 The OS Login service is enabled, allowing login to virtual machines using IAM credentials, eliminating the need to manage traditional SSH keys.
 
-```
+```bash
 resource "google_compute_project_metadata" "oslogin" {
     project = var.project_id
 
@@ -201,7 +166,7 @@ resource "google_compute_project_metadata" "oslogin" {
 The **network.tf** file is responsible for configuring the network in Google Cloud, 
 including creating a virtual private network (VPC), subnets and firewall rules (rule allowing HTTP access and rule allowing SSH access)
 
-```
+```bash
 resource "google_compute_network" "vpc"{
     name = "vpc-observability"
     auto_create_subnetworks = false
@@ -244,7 +209,7 @@ The **compute.tf** file defines the creation of 3 virtual machines on Google Com
 Each virtual machine is launched with a specified size and assigned role. 
 Additionally, a startup script is executed on each machine.
 
-```
+```bash
 resource "google_compute_instance" "vm1" {
     count = 3
     name = "vm-${count.index + 1}"
@@ -284,7 +249,8 @@ It also creates an HTML file for the monitoring page. Additionally, the script i
 **System Update and Package Installation**
 The script starts by updating the system and installing the necessary packages to monitor the availability of virtual machines. 
 The nginx, curl, and telnet packages allow testing network connections and application availability.
-```
+
+```bash
 apt-get update -y
 apt-get install -y nginx curl telnet
 
@@ -292,7 +258,8 @@ apt-get install -y nginx curl telnet
 
 **Starting and Configuring Nginx**
 This part of the script starts the Nginx service, configures it to start automatically on system boot, and then restarts the service to ensure it is working correctly.
-```
+
+```bash
 systemctl enable nginx
 systemctl restart nginx
 ```
@@ -300,7 +267,8 @@ systemctl restart nginx
 **Creating the healthz File**
 The healthz file is created and will be used to test the availability of the virtual machine. 
 This file is used by monitoring mechanisms to check if the machine is running properly.
-```
+
+```bash
 echo "OK" > /var/www/html/healthz
 chmod -R 755 /var/www/html
 ```
@@ -309,7 +277,7 @@ This part of the script installs the Google Cloud Ops Agent, which is responsibl
 and logs from the virtual machine and sending them to Google Cloud Monitoring and Cloud Logging. 
 Then, configuration files are set up to collect metrics (e.g., CPU, memory, disk usage) and logs (e.g., syslog, nginx access).
 
-```
+```bash
 curl -sSO https://dl.google.com/cloudagents/add-google-cloud-ops-agent-repo.sh
 sudo bash add-google-cloud-ops-agent-repo.sh --also-install
 sudo apt list --installed | grep google-cloud-ops-agent
@@ -375,7 +343,8 @@ while the OS Login user is granted access to the virtual machines.
 
 This is essential for allowing the VM's service account to push logs (e.g., nginx, syslog) to Google Cloud Logging. 
 This allows us to monitor and troubleshoot our VMs based on their logs:
-```
+
+```bash
 resource "google_project_iam_member" "logging_writer" {
     project = var.project_id
     member = "serviceAccount:${google_service_account.vm_service_account.email}"
@@ -385,7 +354,8 @@ resource "google_project_iam_member" "logging_writer" {
 
 This role ensures the VM can send performance metrics (e.g., CPU, RAM, disk usage) to Google Cloud Monitoring. 
 These metrics are crucial for creating dashboards and setting up alert policies to monitor the health and performance of the VM environment:
-```
+
+```bash
 resource "google_project_iam_member" "monitoring_metric_writer" {
     project = var.project_id
     member = "serviceAccount:${google_service_account.vm_service_account.email}"
@@ -394,7 +364,8 @@ resource "google_project_iam_member" "monitoring_metric_writer" {
 ```
 These roles enable secure access to the VMs through OS Login. The osLogin_user role allows regular users to log in, while the osLogin_admin role provides administrative access. 
 This eliminates the need to manage SSH keys manually:
-```
+
+```bash
 resource "google_project_iam_member" "oslogin_user" {
     project = var.project_id
     member = "user:${var.oslogin_user_email}"
@@ -411,7 +382,7 @@ resource "google_project_iam_member" "oslogin_admin" {
 The kms.tf file configures Key Management Service (KMS) in Google Cloud. It creates a Key Ring and Crypto Key, 
 which are used for encrypting virtual machine disks. This ensures the security of data stored on the virtual machines.
 
-```
+```bash
 resource "google_kms_key_ring" "vm_key_ring" {
     name = "vm-key-ring-1"
     location = var.region
@@ -440,7 +411,7 @@ These policies allow for detecting issues with virtual machines and sending imme
 Before discussing the specific alerts, it is important to explain the google_monitoring_notification_channel resource. 
 This resource configures the notification channel that will be used by alerts to send notifications (e.g., by email).
 
-```
+```bash
 resource "google_monitoring_notification_channel" "main_email" {
     display_name = "Main email"
     type = "email"
@@ -455,7 +426,8 @@ resource "google_monitoring_notification_channel" "main_email" {
 1. **High CPU Utilization Alert**
 This alert detects when CPU usage on virtual machines exceeds 80% for 5 minutes. 
 A notification is sent when this threshold is exceeded.
-```
+
+```bash
 resource "google_monitoring_alert_policy" "high_cpu" {
     display_name = "High CPU on VM instances"
     combiner = "OR"
@@ -484,7 +456,7 @@ resource "google_monitoring_alert_policy" "high_cpu" {
 This alert triggers when RAM usage exceeds 70% for 2 minutes. 
 A notification is also sent when this threshold is exceeded.
 
-```
+```bash
 resource "google_monitoring_alert_policy" "high_memory" {
     display_name = "High memory usage on VM instances"
     combiner = "OR"
@@ -512,7 +484,7 @@ resource "google_monitoring_alert_policy" "high_memory" {
 This alert checks whether virtual machines are available and responding to HTTP requests.
 If a machine fails the availability check for 3 minutes, a notification is triggered.
 
-```
+```bash
 resource "google_monitoring_alert_policy" "uptime_failed" {
     display_name = "Uptime check failed"
     combiner = "OR"
@@ -539,7 +511,7 @@ resource "google_monitoring_alert_policy" "uptime_failed" {
 4. **High Disk Usage Alert**
 This alert monitors disk usage on virtual machines and triggers a notification when disk usage exceeds 80%.
 
-```
+```bash
 resource "google_monitoring_alert_policy" "disk_full" {
   display_name = "High Disk Usage"
   combiner     = "OR"
@@ -567,7 +539,7 @@ resource "google_monitoring_alert_policy" "disk_full" {
 The **uptime_check.tf** file configures uptime checks for virtual machines using HTTP. 
 It monitors the availability of machines by checking if they respond to HTTP requests every 60 seconds.
 
-```
+```bash
 locals {
     vm_instances = {
         for idx, vm in google_compute_instance.vm1 : 
@@ -609,7 +581,8 @@ The dashboard contains widgets to monitor CPU, RAM, machine availability, and di
 
 This section creates a VM Monitoring Dashboard in Cloud Monitoring with a grid layout of 2 columns. 
 The dashboard will display various widgets to monitor the performance and availability of the virtual machines.
-```
+
+```bash
 resource "google_monitoring_dashboard" "vm_full_dashboard" {
   dashboard_json = jsonencode({
     displayName = "VM Monitoring Dashboard"
@@ -622,7 +595,8 @@ resource "google_monitoring_dashboard" "vm_full_dashboard" {
 
 **CPU Utilization per VM Widget**
 This widget monitors the CPU utilization per VM. It displays CPU usage (excluding idle time) for each VM over time.
-```
+
+```bash
         {
           title = "CPU Utilization per VM"
           xyChart = {
@@ -656,7 +630,8 @@ This widget monitors the CPU utilization per VM. It displays CPU usage (excludin
 ```
 **RAM Usage per VM Widget**
 This widget displays the RAM usage per VM. It tracks the percentage of RAM used on each VM. 
-```
+
+```bash
         {
           title = "RAM Usage per VM"
           xyChart = {
@@ -689,8 +664,9 @@ This widget displays the RAM usage per VM. It tracks the percentage of RAM used 
         },
 ```
 **Uptime Check Status per VM Widget**
-This widget monitors the uptime check status per VM. It tracks whether the VM is responding to the health check. 
-```
+This widget monitors the uptime check status per VM. It tracks whether the VM is responding to the health check.
+
+```bash
         {
           title = "Uptime Check Status per VM"
           xyChart = {
@@ -724,7 +700,7 @@ This widget monitors the uptime check status per VM. It tracks whether the VM is
 **Disk Usage per VM Widget**
 This widget monitors the disk usage per VM for the /dev/sda1 partition. It tracks how much of the disk space is udes on each VM. 
 
-```
+```bash
         {
           title = "Disk Usage (/dev/sda1) per VM"
           xyChart = {
@@ -759,8 +735,6 @@ This widget monitors the disk usage per VM for the /dev/sda1 partition. It track
   })
 }
 ```
-
-
 
 ## **Cloud Monitoring Dashboard Configuration (CPU, RAM, uptime)**
 
