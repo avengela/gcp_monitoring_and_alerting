@@ -96,6 +96,6 @@ resource "google_monitoring_alert_policy" "disk_full" {
       }
     }
   }
-
+  severity = "WARNING"
   notification_channels = [google_monitoring_notification_channel.main_email.id]
 }
