@@ -1,4 +1,3 @@
-<img width="1132" height="475" alt="image" src="https://github.com/user-attachments/assets/69b2850a-6a15-4a3b-b79f-cd3fd5e667db" /># gcp_monitoring_and_alerting
 This project is part of an assignment for Project Level Up – Advanced ICT Skills Academy for Women, Topic 7: Monitoring and Alerting for Multi-VM Environment.
 
 # Monitoring and Alerting for Multi-VM Environment
