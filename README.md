@@ -5,90 +5,723 @@ The goal of this project is to set up a central infrastructure monitoring system
 The project involves creating a test environment in Google Cloud with several virtual machines, 
 monitoring their status, and responding to failures through alerts.
 
-## Tools
-The following tools are used in this project:
-
--**Compute Engine**
-
--**Terraform**
-
--**Google Cloud Provider**
-
--**Cloud Monitoring** 
-
--**Cloud Logging**
-
--**Alerting Policies**
-
+## Architecture
+Terraform
+│
+├── Network
+│     ├── VPC
+│     ├── Subnet 10.10.0.0/24
+│     └── Firewall
+│            ├── allow-http (80)
+│            └── allow-ssh (22)
+│
+├── Compute Engine (3× VM)
+│     ├── Debian 12
+│     ├── KMS-encrypted disk
+│     ├── Service Account
+│     └── Startup Script
+│            ├── Nginx + /healthz
+│            ├── HTML dashboard
+│            └── Ops Agent (metrics + logs)
+│
+├── IAM
+│     ├── logging.logWriter (SA)
+│     ├── monitoring.metricWriter (SA)
+│     ├── compute.osLogin (user)
+│     └── compute.osAdminLogin (user)
+│
+├── KMS
+│     ├── Key Ring: vm-key-ring-1
+│     └── Crypto Key: vm-disk-key
+│
+├── Monitoring
+│     ├── Dashboard
+│     ├── Uptime Checks (per VM)
+│     └── Alert Policies
+│           ├── High CPU (>80%)
+│           ├── High RAM (>70%)
+│           ├── High Disk (>80%)
+│           └── Uptime Failed
+│
+└── Notification Channel
+      └── Email → var.email_name
+      
 ## Creating the Environment
 In this project, a monitoring and alerting system is configured using Terraform.
 
 ### [variables.tf](terraform/variables.tf)
-The **variables.tf** file contains definitions that are used in other configuration files. 
-It includes variables for project ID, region, zone, machine type and alert notification data.
+The variables.tf file contains definitions of variables that are used in other configuration files. 
+It includes variables for the project ID, region, zone, machine type, project number, and alert notification data, including the email address for notifications and the OS login user’s email address.
+
+```
+variable "project_id" {
+    description = "Google Cloud project ID"
+    type = string
+    default = "your-project-Id"
+}
+
+variable "region"{
+    description = "GCE region"
+    type = string
+    default = "your-region"
+}
+
+variable "machine_type"{
+    description = "GCE machine type"
+    type = string
+    default = "your-vm-machine-type"
+}
+
+variable "zone"{
+    description ="GCE zone"
+    type =string
+    default = "your-vm-zone"
+}
+
+variable "project_number"{
+    type = string
+    default = "your-project-number"
+}
+
+variable "email_name"{
+    type = string
+    default = "your-email-alert"
+}
+
+variable "oslogin_user_email" {
+    description = "oslogin email"
+    type = string
+    default = "your-oslogin-user-email"
+}
+```
 
 ### [main.tf](terraform/main.tf)
-The **main.tf** file contains the basic Terraform configuration, 
-including the required versions of tools and the configuration of the Google Cloud provider, 
-which is used to manage resources in the cloud.
+The **main.tf** file containsthe key configuration for Terraform, 
+including the tool version, Google Cloud provider configuration and resources that need to be created to prepare the environment.
+
+This fragment sets the version requirements for Terraform and the Google Cloud provider:
+
+```
+terraform {
+    required_version = ">= 1.5.0"
+
+    required_providers {
+        google = {
+            source = "hashicorp/google"
+            version = "~> 6.0"
+        }
+    }
+}
+```
+**Google Cloud Provider**
+
+In this section, configuration data for the Google Cloud provider is specified, such as the project ID, region, and zone, where resources will be created.
+```
+provider "google"{
+    project = var.project_id 
+    region = var.region
+    zone = var.zone
+}
+```
+
+**Service Account**
+A service account is created and assigned to the project. 
+This account will be used by the virtual machines to access Google Cloud resources, such as logs and metrics.
+```
+resource "google_service_account" "vm_service_account" {
+    account_id = "vm-service-account"
+    display_name = "VM Service Account"
+    project = var.project_id
+}
+```
+**Enabling KMS API**
+This enables the Key Management Service (KMS) API, which allows managing encryption keys in Google Cloud. 
+KMS will be used for data encryption, ensuring data security in the cloud.
+
+```
+resource "google_project_service" "kms_api" {
+    project = var.project_id
+    service = "cloudkms.googleapis.com"
+    disable_on_destroy = false
+}
+```
+**Enabling OS Login**
+The OS Login service is enabled, allowing login to virtual machines using IAM credentials, eliminating the need to manage traditional SSH keys.
+
+```
+resource "google_compute_project_metadata" "oslogin" {
+    project = var.project_id
+
+    metadata = {
+        enable-oslogin = "TRUE"
+    }
+}
+```
 
 ### [network.tf](terraform/network.tf)
 The **network.tf** file is responsible for configuring the network in Google Cloud, 
-including creating a virtual private network (VPC), 
-subnets and firewall rules (rule allowing HTTP access and rule allowing SSH access)
+including creating a virtual private network (VPC), subnets and firewall rules (rule allowing HTTP access and rule allowing SSH access)
+
+```
+resource "google_compute_network" "vpc"{
+    name = "vpc-observability"
+    auto_create_subnetworks = false
+}
+
+resource "google_compute_subnetwork" "subnet" {
+    name = "subnet1"
+    region = var.region
+    network = google_compute_network.vpc.id
+    ip_cidr_range = "10.10.0.0/24"
+}
+
+resource "google_compute_firewall" "allow_http"{
+    name = "allow-http"
+    network =google_compute_network.vpc.name
+
+    allow {
+        protocol = "tcp"
+        ports = ["80"]
+    }
+
+    source_ranges = ["0.0.0.0/0"]
+}
+
+resource "google_compute_firewall" "allow_ssh" {
+    name = "allow-ssh"
+    network = google_compute_network.vpc.name
+
+    allow {
+        protocol = "tcp"
+        ports = ["22"]
+    }
+    source_ranges = ["0.0.0.0/0"]
+}
+
+```
 
 ### [compute.tf](terraform/compute.tf)
 The **compute.tf** file defines the creation of 3 virtual machines on Google Compute Engine. 
 Each virtual machine is launched with a specified size and assigned role. 
-Additionally, a stratup script is executed on each machine.
+Additionally, a startup script is executed on each machine.
+
+```
+resource "google_compute_instance" "vm1" {
+    count = 3
+    name = "vm-${count.index + 1}"
+    machine_type = var.machine_type
+    zone = var.zone
+    tags = ["http-server"]
+
+    boot_disk{
+        initialize_params{
+            image = "debian-cloud/debian-12"
+            size = 12
+        }
+        kms_key_self_link = google_kms_crypto_key.vm_disk_key.id
+    }
+
+    network_interface {
+        subnetwork = google_compute_subnetwork.subnet.id
+        access_config{}
+    }
+
+    service_account {
+        email = google_service_account.vm_service_account.email
+        scopes = [
+            "https://www.googleapis.com/auth/logging.write",
+            "https://www.googleapis.com/auth/monitoring.write"
+        ]
+    }
+
+    metadata_startup_script = file("${path.module}/scripts/startup.sh")
+}
+```
 
 ### [startup.sh](terraform/scripts/startup.sh)
-The **startup.sh** file is a script that runs when each virtual machine in the project.
+The **startup.sh** file is a script that runs on each virtual machine. It installs Nginx, curl, and telnet to allow service monitoring and availability testing. 
+It also creates an HTML file for the monitoring page. Additionally, the script installs the Google Cloud Ops agent and configures it to collect metrics and logs.
 
-***It performs the following tasks:***
--installs nginx, curl and telnet to enable service monitoring and testing the availability of network services on the VM,
+**System Update and Package Installation**
+The script starts by updating the system and installing the necessary packages to monitor the availability of virtual machines. 
+The nginx, curl, and telnet packages allow testing network connections and application availability.
+```
+apt-get update -y
+apt-get install -y nginx curl telnet
 
--enables and restarts the nginx service, setting it up as a web server to serve the monitoring page,
+```
 
--creates a simple HTML page,
+**Starting and Configuring Nginx**
+This part of the script starts the Nginx service, configures it to start automatically on system boot, and then restarts the service to ensure it is working correctly.
+```
+systemctl enable nginx
+systemctl restart nginx
+```
 
--writes a simple "OK" message to /var/www/html/healthz, which is used for health checks to ensure the VM is up and running,
+**Creating the healthz File**
+The healthz file is created and will be used to test the availability of the virtual machine. 
+This file is used by monitoring mechanisms to check if the machine is running properly.
+```
+echo "OK" > /var/www/html/healthz
+chmod -R 755 /var/www/html
+```
+**Installing and Configuring Google Cloud Ops Agent**
+This part of the script installs the Google Cloud Ops Agent, which is responsible for collecting metrics 
+and logs from the virtual machine and sending them to Google Cloud Monitoring and Cloud Logging. 
+Then, configuration files are set up to collect metrics (e.g., CPU, memory, disk usage) and logs (e.g., syslog, nginx access).
 
--installs Google Cloud Ops Agent by downloading the installation script and executing it,
+```
+curl -sSO https://dl.google.com/cloudagents/add-google-cloud-ops-agent-repo.sh
+sudo bash add-google-cloud-ops-agent-repo.sh --also-install
+sudo apt list --installed | grep google-cloud-ops-agent
 
--configures the Ops Agent by creating necessary configuration files for logging and metric collection, 
-specifically forsyslog error, nginx access logs, host metrics.
+sudo mkdir -p /etc/google-cloud-ops-agent/config.d
 
+sudo bash -c 'cat << EOF > /etc/google-cloud-ops-agent/config.d/metrics.yaml
+---
+metrics:
+  receivers:
+    hostmetrics:
+      type: hostmetrics
+    service:
+      pipelines:
+        default_pipeline:
+          receivers: [hostmetrics]
+EOF'
 
-### [uptime_check.tf](terraform/uptime_check.tf)
-The **uptime_check.tf** file configures uptime checks for virtual machines using HTTP. 
-It monitors the availability of machines by checking if they respond to HTTP requests every 60 seconds.
+sudo bash -c 'cat << EOF > /etc/google-cloud-ops-agent/config.d/nginx-logs.yaml
+---
+logging:
+  receivers:
+    type: nginx_access
+    include_paths:
+      - /var/log/nginx/access.log
+  service:
+    pipelines:
+      nginx_pipeline:
+        receivers: [nginx_access]
+EOF'
+
+sudo bash -c 'cat << EOF > /etc/google-cloud-ops-agent/config.d/syslog-logs.yaml
+---
+logging:
+  receivers:
+    syslog_receiver:
+      type: files
+      include_paths:
+        - /var/log/syslog
+
+  processors:
+    syslog_parser:
+      type: syslog
+    
+    severity_filter:
+      type: severity
+      severity_levels: ["CRITICAL", "ERROR", "WARNING"]
+
+  service:
+    pipelines:
+      default_pipeline:
+        receivers: [syslog_receiver]
+        processors: [syslog_parser, severity_filter]
+EOF'
+
+sudo service google-cloud-ops-agent restart
+```
+
+### iam.tf](terraform/iam.tf)
+The **iam.tf** file configures the appropriate IAM permissions for the virtual machine's service account and the OS Login user. 
+The virtual machine's service account is granted roles that allow it to write logs and metrics to Google Cloud, 
+while the OS Login user is granted access to the virtual machines.
+
+This is essential for allowing the VM's service account to push logs (e.g., nginx, syslog) to Google Cloud Logging. 
+This allows us to monitor and troubleshoot our VMs based on their logs:
+```
+resource "google_project_iam_member" "logging_writer" {
+    project = var.project_id
+    member = "serviceAccount:${google_service_account.vm_service_account.email}"
+    role = "roles/logging.logWriter"
+}
+```
+
+This role ensures the VM can send performance metrics (e.g., CPU, RAM, disk usage) to Google Cloud Monitoring. 
+These metrics are crucial for creating dashboards and setting up alert policies to monitor the health and performance of the VM environment:
+```
+resource "google_project_iam_member" "monitoring_metric_writer" {
+    project = var.project_id
+    member = "serviceAccount:${google_service_account.vm_service_account.email}"
+    role = "roles/monitoring.metricWriter"
+}
+```
+These roles enable secure access to the VMs through OS Login. The osLogin_user role allows regular users to log in, while the osLogin_admin role provides administrative access. 
+This eliminates the need to manage SSH keys manually:
+```
+resource "google_project_iam_member" "oslogin_user" {
+    project = var.project_id
+    member = "user:${var.oslogin_user_email}"
+    role = "roles/compute.osLogin"
+}
+
+resource "google_project_iam_member" "oslogin_admin" {
+    project = var.project_id
+    member = "user:${var.oslogin_user_email}"
+    role = "roles/compute.osAdminLogin"
+}
+```
+### [kms.tf](terraform/kms.tf)
+The kms.tf file configures Key Management Service (KMS) in Google Cloud. It creates a Key Ring and Crypto Key, 
+which are used for encrypting virtual machine disks. This ensures the security of data stored on the virtual machines.
+
+```
+resource "google_kms_key_ring" "vm_key_ring" {
+    name = "vm-key-ring-1"
+    location = var.region
+
+    depends_on = [google_project_service.kms_api]
+}
+
+resource "google_kms_crypto_key" "vm_disk_key" {
+    name = "vm-disk-key"
+    key_ring = google_kms_key_ring.vm_key_ring.id
+    rotation_period = "2592000s"
+}
+
+resource "google_kms_crypto_key_iam_member" "vm_sa_kms_user" {
+    crypto_key_id = google_kms_crypto_key.vm_disk_key.id
+    role = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
+    member = "serviceAccount:service-${var.project_number}@compute-system.iam.gserviceaccount.com"
+}
+```
 
 ### [monitoring_alerts.tf](terraform/monitoring_alerts.tf)
 The **monitoring_alerts.tf** file is responsible for configuring alert policies in Google Cloud Monitoring. 
 These policies allow for detecting issues with virtual machines and sending immediate notifications (via email) if predefined thresholds are exceeded.
 
-1. **Alert for high CPU utilization**
-   
-This alert detects when CPU usage on virtual machines exceeds 80% for 5 minutes.
+**Google Monitoring Notification Channel**
+Before discussing the specific alerts, it is important to explain the google_monitoring_notification_channel resource. 
+This resource configures the notification channel that will be used by alerts to send notifications (e.g., by email).
 
-A notification is sent if this threshold is exceeded. 
+```
+resource "google_monitoring_notification_channel" "main_email" {
+    display_name = "Main email"
+    type = "email"
 
-2. **Alert for high RAM utilization**
-   
-This alert triggers when RAM usage exceeds 47% for 2 minutes.
-In this case, a notification is also sent. 
+    labels = {
+        email_address = var.email_name
+    }
+}
+```
+#### Alerts
 
-3. **Alert for failed uptime check**
-   
-This policy monitors the disk usage of virtual machines.
-If the percentage of used space on any disk exceeds 80% for at least 1 minute, a notification is sent to the configured channel.
-It helps prevent issues caused by disks filling up, such as application failures or system crashes.
+1. **High CPU Utilization Alert**
+This alert detects when CPU usage on virtual machines exceeds 80% for 5 minutes. 
+A notification is sent when this threshold is exceeded.
+```
+resource "google_monitoring_alert_policy" "high_cpu" {
+    display_name = "High CPU on VM instances"
+    combiner = "OR"
+    enabled = true
 
-4. **Alert for high disk usage**
-   
-This policy monitors the logs of virtual machines for "ERROR"-type error in the syslog.
-If the numer of errors exceeds 1 within a minute, a notification is generated.
+    conditions {
+        display_name = "CPU > 80% for 5 minutes"
+
+        condition_threshold{
+            filter = "metric.type=\"compute.googleapis.com/instance/cpu/utilization\" AND resource.type=\"gce_instance\""
+            comparison = "COMPARISON_GT"
+            threshold_value = 0.8
+            duration = "300s"
+            
+            trigger {
+                count = 1
+            }
+        }
+    }
+    severity = "WARNING"
+    notification_channels = [google_monitoring_notification_channel.main_email.id]
+}
+```
+
+2. **High RAM Utilization Alert**
+This alert triggers when RAM usage exceeds 70% for 2 minutes. 
+A notification is also sent when this threshold is exceeded.
+
+```
+resource "google_monitoring_alert_policy" "high_memory" {
+    display_name = "High memory usage on VM instances"
+    combiner = "OR"
+    enabled = true
+
+    conditions {
+        display_name = "RAM > 70% for 2 minutes"
+        condition_threshold {
+            filter = "metric.type=\"agent.googleapis.com/memory/percent_used\" AND resource.type=\"gce_instance\""
+            comparison = "COMPARISON_GT"
+            threshold_value = 70
+            duration = "120s"
+
+            trigger {
+                count = 1
+            }
+        }
+    }
+    severity = "WARNING"
+    notification_channels = [google_monitoring_notification_channel.main_email.id]
+}
+```
+
+3. **Uptime Check Failed Alert**
+This alert checks whether virtual machines are available and responding to HTTP requests.
+If a machine fails the availability check for 3 minutes, a notification is triggered.
+
+```
+resource "google_monitoring_alert_policy" "uptime_failed" {
+    display_name = "Uptime check failed"
+    combiner = "OR"
+    enabled = true
+
+    conditions {
+        display_name = "Uptime check failed for 3 minutes"
+
+        condition_threshold {
+            filter ="metric.type=\"monitoring.googleapis.com/uptime_check/check_passed\" AND resource.type=\"gce_instance\""
+            comparison = "COMPARISON_LT"
+            threshold_value = 1
+            duration = "180s"
+        
+            trigger {
+                count = 1
+            }
+        }
+    }
+    severity = "ERROR"
+    notification_channels = [google_monitoring_notification_channel.main_email.id]
+}
+```
+4. **High Disk Usage Alert**
+This alert monitors disk usage on virtual machines and triggers a notification when disk usage exceeds 80%.
+
+```
+resource "google_monitoring_alert_policy" "disk_full" {
+  display_name = "High Disk Usage"
+  combiner     = "OR"
+  enabled = true
+
+  conditions {
+    display_name = "Disk > 80%"
+    condition_threshold {
+      filter          = "metric.type=\"agent.googleapis.com/disk/percent_used\" AND resource.type=\"gce_instance\" AND metric.label.state = \"used\""
+      duration        = "60s"
+      comparison      = "COMPARISON_GT"
+      threshold_value = 80
+      aggregations {
+        alignment_period   = "60s"
+        per_series_aligner = "ALIGN_MEAN"
+      }
+    }
+  }
+  severity = "WARNING"
+  notification_channels = [google_monitoring_notification_channel.main_email.id]
+}
+```
+
+### [uptime_check.tf](terraform/uptime_check.tf)
+The **uptime_check.tf** file configures uptime checks for virtual machines using HTTP. 
+It monitors the availability of machines by checking if they respond to HTTP requests every 60 seconds.
+
+```
+locals {
+    vm_instances = {
+        for idx, vm in google_compute_instance.vm1 : 
+        vm.name => {
+            instance_id = vm.instance_id
+            zone = vm.zone
+        }
+    }
+}
+
+resource "google_monitoring_uptime_check_config" "http_check" {
+    for_each = local.vm_instances
+
+    display_name = "HTTP check - ${each.key}"
+    timeout = "10s"
+    period = "60s"
+
+    http_check {
+        path = "/"
+        port = 80
+    }
+
+    monitored_resource  { 
+        type = "gce_instance"
+        labels = {
+            project_id = var.project_id
+            instance_id = each.value.instance_id
+            zone = each.value.zone
+        }
+    }
+}
+
+```
+
+###  [monitoring_dashboard.tf](terraform/monitoring_dashboard.tf)
+The monitoring_dashboard.tf file is responsible for creating a custom monitoring dashboard in Cloud Monitoring. 
+The dashboard contains widgets to monitor CPU, RAM, machine availability, and disk usage.
+
+
+This section creates a VM Monitoring Dashboard in Cloud Monitoring with a grid layout of 2 columns. 
+The dashboard will display various widgets to monitor the performance and availability of the virtual machines.
+```
+resource "google_monitoring_dashboard" "vm_full_dashboard" {
+  dashboard_json = jsonencode({
+    displayName = "VM Monitoring Dashboard"
+
+    gridLayout = {
+      columns = 2
+      widgets = [
+``
+```
+
+**CPU Utilization per VM Widget**
+This widget monitors the CPU utilization per VM. It displays CPU usage (excluding idle time) for each VM over time.
+```
+        {
+          title = "CPU Utilization per VM"
+          xyChart = {
+            dataSets = [
+              {
+                timeSeriesQuery = {
+                  timeSeriesFilter = {
+                    filter = "metric.type=\"agent.googleapis.com/cpu/utilization\" AND resource.type=\"gce_instance\" AND metric.label.cpu_state != \"idle\""
+                    aggregation = {
+                      alignmentPeriod    = "60s"
+                      perSeriesAligner   = "ALIGN_MEAN"
+                      crossSeriesReducer = "REDUCE_SUM"
+                      groupByFields      = ["metadata.system_labels.name"]
+                    }
+                  }
+                }
+              }
+            ]
+            thresholds = [
+              {
+                label = "80% High CPU"
+                value = 80
+              }
+            ]
+            yAxis = {
+              label = "CPU Usage (%)"
+              scale = "LINEAR"
+            }
+          }
+        },
+```
+**RAM Usage per VM Widget**
+This widget displays the RAM usage per VM. It tracks the percentage of RAM used on each VM. 
+```
+        {
+          title = "RAM Usage per VM"
+          xyChart = {
+            dataSets = [
+              {
+                timeSeriesQuery = {
+                  timeSeriesFilter = {
+                    filter = "metric.type=\"agent.googleapis.com/memory/percent_used\" AND resource.type=\"gce_instance\" AND metric.label.state = \"used\""
+                    aggregation = {
+                      alignmentPeriod    = "60s"
+                      perSeriesAligner   = "ALIGN_MEAN"
+                      crossSeriesReducer = "REDUCE_SUM"
+                      groupByFields      = ["metadata.system_labels.name"]
+                    }
+                  }
+                }
+              }
+            ]
+            thresholds = [
+              {
+                label = "70% High RAM"
+                value = 70
+              }
+            ]
+            yAxis = {
+              label = "RAM Usage (%)"
+              scale = "LINEAR"
+            }
+          }
+        },
+```
+**Uptime Check Status per VM Widget**
+This widget monitors the uptime check status per VM. It tracks whether the VM is responding to the health check. 
+```
+        {
+          title = "Uptime Check Status per VM"
+          xyChart = {
+            dataSets = [
+              {
+                timeSeriesQuery = {
+                  timeSeriesFilter = {
+                    filter = "metric.type=\"monitoring.googleapis.com/uptime_check/check_passed\""
+                    aggregation = {
+                      alignmentPeriod  = "300s"
+                      perSeriesAligner = "ALIGN_FRACTION_TRUE"
+                      groupByFields    = ["metric.labels.check_id"]
+                    }
+                  }
+                }
+              }
+            ]
+            thresholds = [
+              {
+                label = "Fail Threshold"
+                value = 0
+              }
+            ]
+            yAxis = {
+              label = "Check Passed (1=OK, 0=Fail)"
+              scale = "LINEAR"
+            }
+          }
+        },
+```
+**Disk Usage per VM Widget**
+This widget monitors the disk usage per VM for the /dev/sda1 partition. It tracks how much of the disk space is udes on each VM. 
+
+```
+        {
+          title = "Disk Usage (/dev/sda1) per VM"
+          xyChart = {
+            dataSets = [
+              {
+                timeSeriesQuery = {
+                  timeSeriesFilter = {
+                    filter = "metric.type=\"agent.googleapis.com/disk/percent_used\" AND resource.type=\"gce_instance\" AND metric.label.state = \"used\" AND metric.label.device = \"/dev/sda1\""
+                    aggregation = {
+                      alignmentPeriod  = "60s"
+                      perSeriesAligner = "ALIGN_MEAN"
+                    }
+                  }
+                }
+              }
+            ]
+            thresholds = [
+              {
+                label = "80% Full"
+                value = 80
+              }
+            ]
+            yAxis = {
+              label = "Disk Usage (%)"
+              scale = "LINEAR"
+            }
+          }
+        }
+
+      ]
+    }
+  })
+}
+```
+
+
 
 ## **Cloud Monitoring Dashboard Configuration (CPU, RAM, uptime)**
 
