@@ -76,3 +76,26 @@ resource "google_monitoring_alert_policy" "uptime_failed" {
     severity = "ERROR"
     notification_channels = [google_monitoring_notification_channel.main_email.id]
 }
+
+
+resource "google_monitoring_alert_policy" "disk_full" {
+  display_name = "High Disk Usage"
+  combiner     = "OR"
+  enabled = true
+
+  conditions {
+    display_name = "Disk > 80%"
+    condition_threshold {
+      filter          = "metric.type=\"agent.googleapis.com/disk/percent_used\" AND resource.type=\"gce_instance\" AND metric.label.state = \"used\""
+      duration        = "60s"
+      comparison      = "COMPARISON_GT"
+      threshold_value = 80
+      aggregations {
+        alignment_period   = "60s"
+        per_series_aligner = "ALIGN_MEAN"
+      }
+    }
+  }
+
+  notification_channels = [google_monitoring_notification_channel.main_email.id]
+}

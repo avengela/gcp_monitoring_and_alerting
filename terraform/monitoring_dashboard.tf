@@ -1,14 +1,14 @@
 resource "google_monitoring_dashboard" "vm_full_dashboard" {
   dashboard_json = jsonencode({
-    displayName = "VM Full Monitoring Dashboard"
+    displayName = "VM Monitoring Dashboard"
 
     gridLayout = {
       columns = 2
       widgets = [
 
-        # ---- CPU Utilization per instance ----
+        # ---- CPU Utilization per VM ----
         {
-          title = "CPU Utilization per instance"
+          title = "CPU Utilization per VM"
           xyChart = {
             dataSets = [
               {
@@ -25,12 +25,22 @@ resource "google_monitoring_dashboard" "vm_full_dashboard" {
                 }
               }
             ]
+            thresholds = [
+              {
+                label = "80% High CPU"
+                value = 80
+              }
+            ]
+            yAxis = {
+              label = "CPU Usage (%)"
+              scale = "LINEAR"
+            }
           }
         },
 
-        # ---- Used Memory % per instance ----
+        # ---- RAM Usage per VM ----
         {
-          title = "Used Memory % per instance"
+          title = "RAM Usage per VM"
           xyChart = {
             dataSets = [
               {
@@ -47,12 +57,22 @@ resource "google_monitoring_dashboard" "vm_full_dashboard" {
                 }
               }
             ]
+            thresholds = [
+              {
+                label = "70% High RAM"
+                value = 70
+              }
+            ]
+            yAxis = {
+              label = "RAM Usage (%)"
+              scale = "LINEAR"
+            }
           }
         },
 
-        # ---- VM Uptime Check Status ----
+        # ---- Uptime Check Status per VM ----
         {
-          title = "VM Uptime Check Status"
+          title = "Uptime Check Status per VM"
           xyChart = {
             dataSets = [
               {
@@ -60,65 +80,52 @@ resource "google_monitoring_dashboard" "vm_full_dashboard" {
                   timeSeriesFilter = {
                     filter = "metric.type=\"monitoring.googleapis.com/uptime_check/check_passed\""
                     aggregation = {
-                      alignmentPeriod    = "300s"
-                      perSeriesAligner   = "ALIGN_FRACTION_TRUE"
-                      groupByFields      = ["metric.labels.check_id"]
+                      alignmentPeriod  = "300s"
+                      perSeriesAligner = "ALIGN_FRACTION_TRUE"
+                      groupByFields    = ["metric.labels.check_id"]
                     }
                   }
                 }
               }
             ]
-          }
-        },
-
-        # ---- Syslog Warning Count per VM ----
-        {
-          title = "Syslog Warning Count per VM"
-          xyChart = {
-            dataSets = [
+            thresholds = [
               {
-                timeSeriesQuery = {
-                  timeSeriesFilter = {
-                    filter = "metric.type=\"logging.googleapis.com/user/vm_warning_count\" AND resource.type=\"gce_instance\""
-                    aggregation = {
-                      alignmentPeriod   = "300s"
-                      perSeriesAligner  = "ALIGN_SUM"
-                      groupByFields     = ["metadata.system_labels.name"]
-                    }
-                  }
-                }
-                plotType = "LINE"
+                label = "Fail Threshold"
+                value = 0
               }
             ]
             yAxis = {
-              label = "Warnings"
+              label = "Check Passed (1=OK, 0=Fail)"
               scale = "LINEAR"
             }
           }
         },
 
-        # ---- Syslog Error Count per VM ----
+        # ---- Disk Usage (/dev/sda1) per VM ----
         {
-          title = "Syslog Error Count per VM"
+          title = "Disk Usage (/dev/sda1) per VM"
           xyChart = {
             dataSets = [
               {
                 timeSeriesQuery = {
                   timeSeriesFilter = {
-                    filter = "metric.type=\"logging.googleapis.com/user/vm_error_count\" AND resource.type=\"gce_instance\""
+                    filter = "metric.type=\"agent.googleapis.com/disk/percent_used\" AND resource.type=\"gce_instance\" AND metric.label.state = \"used\" AND metric.label.device = \"/dev/sda1\""
                     aggregation = {
-                      alignmentPeriod    = "60s"
-                      perSeriesAligner   = "ALIGN_MEAN"
-                      crossSeriesReducer = "REDUCE_SUM"
-                      groupByFields      = ["metadata.system_labels.name"]
+                      alignmentPeriod  = "60s"
+                      perSeriesAligner = "ALIGN_MEAN"
                     }
                   }
                 }
-                plotType = "LINE"
+              }
+            ]
+            thresholds = [
+              {
+                label = "80% Full"
+                value = 80
               }
             ]
             yAxis = {
-              label = "Errors"
+              label = "Disk Usage (%)"
               scale = "LINEAR"
             }
           }
