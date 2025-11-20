@@ -7,44 +7,83 @@ monitoring their status, and responding to failures through alerts.
 
 ## Architecture
 Terraform
+
 │
+
 ├── Network
+
 │     ├── VPC
+
 │     ├── Subnet 10.10.0.0/24
+
 │     └── Firewall
+
 │            ├── allow-http (80)
+
 │            └── allow-ssh (22)
+
 │
+
 ├── Compute Engine (3× VM)
+
 │     ├── Debian 12
+
 │     ├── KMS-encrypted disk
+
 │     ├── Service Account
+
 │     └── Startup Script
+
 │            ├── Nginx + /healthz
+
 │            ├── HTML dashboard
+
 │            └── Ops Agent (metrics + logs)
+
 │
+
 ├── IAM
-│     ├── logging.logWriter (SA)
-│     ├── monitoring.metricWriter (SA)
-│     ├── compute.osLogin (user)
-│     └── compute.osAdminLogin (user)
+
+│     ├── logging.logWriter
+
+│     ├── monitoring.metricWriter 
+
+│     ├── compute.osLogin 
+
+│     └── compute.osAdminLogin 
+
 │
+
 ├── KMS
+
 │     ├── Key Ring: vm-key-ring-1
+
 │     └── Crypto Key: vm-disk-key
+
 │
+
 ├── Monitoring
+
 │     ├── Dashboard
+
 │     ├── Uptime Checks (per VM)
+
 │     └── Alert Policies
+
 │           ├── High CPU (>80%)
+
 │           ├── High RAM (>70%)
+
 │           ├── High Disk (>80%)
+
 │           └── Uptime Failed
+
 │
+
 └── Notification Channel
+
       └── Email → var.email_name
+
       
 ## Creating the Environment
 In this project, a monitoring and alerting system is configured using Terraform.
@@ -53,7 +92,7 @@ In this project, a monitoring and alerting system is configured using Terraform.
 The variables.tf file contains definitions of variables that are used in other configuration files. 
 It includes variables for the project ID, region, zone, machine type, project number, and alert notification data, including the email address for notifications and the OS login user’s email address.
 
-```
+```bash
 variable "project_id" {
     description = "Google Cloud project ID"
     type = string
