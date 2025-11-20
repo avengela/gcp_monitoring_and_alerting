@@ -491,6 +491,7 @@ resource "google_monitoring_alert_policy" "high_memory" {
 ```
 
 3. **Uptime Check Failed Alert**
+
 This alert checks whether virtual machines are available and responding to HTTP requests.
 If a machine fails the availability check for 3 minutes, a notification is triggered.
 
