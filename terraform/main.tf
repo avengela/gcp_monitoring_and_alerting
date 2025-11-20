@@ -20,3 +20,17 @@ resource "google_service_account" "vm_service_account" {
     display_name = "VM Service Account"
     project = var.project_id
 }
+
+resource "google_project_service" "kms_api" {
+    project = var.project_id
+    service = "cloudkms.googleapis.com"
+    disable_on_destroy = false
+}
+
+resource "google_compute_project_metadata" "oslogin" {
+    project = var.project_id
+
+    metadata = {
+        enable-oslogin = "TRUE"
+    }
+}

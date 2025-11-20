@@ -29,5 +29,11 @@ variable "project_number"{
 
 variable "email_name"{
     type = string
-    default = "your-email"
+    default = "your-email-alert"
+}
+
+variable "oslogin_user_email" {
+    description = "oslogin email"
+    type = string
+    default = "your-oslogin-user-email"
 }

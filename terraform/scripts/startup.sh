@@ -7,232 +7,451 @@ apt-get install -y nginx curl telnet
 systemctl enable nginx
 systemctl restart nginx
 
-
 HOSTNAME=$(hostname)
 sudo tee /var/www/html/index.html << EOF
-<!DOCTYPE html> 
-<html> 
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<title>Monitoring and Alerting for Multi-VM Environment</title>
+<meta charset="UTF-8">
+<title>Monitoring & Alerting – Multi-VM GCP Environment</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body {
-background-color: #f1f1f1;
-font-family: Arial, sans-serif;
 margin: 0;
-padding: 0;
-text-align: center;
+font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+background: #020617;
+color: #e5e7eb;
+display: flex;
+justify-content: center;
+padding: 24px;
 }
-.container {
-width: 80%;
-margin: 0 auto;
+.page {
+width: 100%;
+max-width: 1100px;
+}
+.shell {
+background: radial-gradient(circle at top, #1f2937 0, #020617 55%);
+border-radius: 20px;
 padding: 20px;
-background-color: #ffffff;
-border-radius: 8px;
-box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+border: 1px solid rgba(148, 163, 184, 0.3);
+box-shadow: 0 20px 40px rgba(15, 23, 42, 0.9);
 }
-h1 {
-color: #333;
+.header {
+display: flex;
+justify-content: space-between;
+gap: 16px;
+align-items: center;
+margin-bottom: 20px;
 }
-.section {
-margin-bottom: 30px;
+.title {
+font-size: 24px;
+font-weight: 700;
+letter-spacing: 0.04em;
 }
-.section p {
-font-size: 18px;
-color: #555;
+.subtitle {
+font-size: 13px;
+color: #9ca3af;
 }
-.alert {
-background-color: #ffdddd;
-padding: 10px;
-color: red;
-border-radius: 5px;
-font-weight: bold;
+.vm {
+border-radius: 999px;
+border: 1px solid rgba(148, 163, 184, 0.4);
+padding: 8px 12px;
+font-size: 12px;
+background: rgba(15, 23, 42, 0.9);
+min-width: 220px;
 }
-.status {
-font-size: 20px;
-font-weight: bold;
+.vm-label {
+font-size: 10px;
+text-transform: uppercase;
+letter-spacing: 0.16em;
+color: #9ca3af;
+}
+.vm-main {
+font-size: 13px;
+}
+.vm-detail {
+font-size: 11px;
+color: #9ca3af;
+}
+.grid {
+display: grid;
+grid-template-columns: repeat(2, minmax(0, 1fr));
+gap: 16px;
+margin-bottom: 16px;
+}
+@media (max-width: 900px) {
+.grid {
+grid-template-columns: minmax(0, 1fr);
+}
+.header {
+flex-direction: column;
+align-items: flex-start;
+}
+.shell {
+padding: 16px;
+}
+}
+.card {
+background: rgba(15, 23, 42, 0.96);
+border-radius: 16px;
+padding: 14px 16px;
+border: 1px solid rgba(148, 163, 184, 0.4);
+box-shadow: 0 12px 30px rgba(15, 23, 42, 0.8);
+}
+.card-header {
+display: flex;
+justify-content: space-between;
+align-items: baseline;
+margin-bottom: 8px;
+}
+.card-title {
+text-transform: uppercase;
+font-size: 13px;
+letter-spacing: 0.12em;
+color: #9ca3af;
+}
+.tag {
+font-size: 11px;
+border-radius: 999px;
+border: 1px solid rgba(148, 163, 184, 0.5);
+padding: 3px 9px;
+color: #38bdf8;
+background: rgba(15, 23, 42, 0.9);
+}
+.card-body {
+font-size: 13px;
+}
+.list {
+margin-top: 8px;
+padding-left: 18px;
+color: #9ca3af;
+font-size: 13px;
+}
+.highlight {
+margin-top: 10px;
+font-size: 12px;
+padding: 8px 10px;
+border-radius: 10px;
+background: rgba(15, 23, 42, 0.9);
+border: 1px dashed rgba(148, 163, 184, 0.6);
+color: #9ca3af;
+}
+.pills {
+display: flex;
+flex-wrap: wrap;
+gap: 8px;
+margin-top: 8px;
+}
+.pill {
+font-size: 11px;
+border-radius: 999px;
+border: 1px solid rgba(148, 163, 184, 0.4);
+padding: 4px 8px;
+background: rgba(15, 23, 42, 0.9);
+color: #9ca3af;
+}
+.stats {
+display: grid;
+grid-template-columns: repeat(2, minmax(0, 1fr));
+gap: 10px;
+margin-bottom: 8px;
+}
+.stat {
+border-radius: 12px;
+border: 1px solid rgba(148, 163, 184, 0.4);
+padding: 8px 10px;
+background: rgba(15, 23, 42, 0.98);
+font-size: 12px;
+}
+.stat-label {
+font-size: 10px;
+color: #9ca3af;
+text-transform: uppercase;
+letter-spacing: 0.14em;
+margin-bottom: 2px;
+}
+.stat-main {
+font-size: 14px;
+font-weight: 600;
 }
 .ok {
-color: green;
+color: #4ade80;
 }
-.error {
-color: red;
+.err {
+color: #f97373;
 }
-.healthz {
-margin-top: 20px;
-font-size: 16px;
-color: #777;
+.th {
+font-size: 11px;
+color: #9ca3af;
+margin-top: 4px;
+}
+.health {
+display: flex;
+justify-content: space-between;
+gap: 10px;
+align-items: center;
+margin-top: 4px;
+}
+.health-right {
+font-size: 12px;
+color: #9ca3af;
 }
 canvas {
-max-width: 100%;
-height: auto;
-margin-top: 20px;
+width: 100%;
+max-height: 210px;
+}
+.note {
+margin-top: 8px;
+font-size: 11px;
+color: #9ca3af;
+}
+.note code {
+padding: 2px 5px;
+border-radius: 6px;
+background: rgba(15, 23, 42, 0.9);
+border: 1px solid rgba(148, 163, 184, 0.5);
+font-size: 11px;
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<div class="container">
-<h1>Monitoring and Alerting for Multi-VM Environment</h1>
-<div class="section">
-<p><strong>VM Hostname:</strong> $HOSTNAME</p>
-<p><strong>VM IP Address:</strong> $(hostname -I)</p>
-<p><strong>Application Version:</strong> V1</p>
-<p>Project: LevelUp</p>
+<main class="page">
+<section class="shell">
+<header class="header">
+<div>
+<div class="title">Monitoring &amp; Alerting Dashboard</div>
+<p class="subtitle">Multi-VM environment for the <strong>LevelUp</strong> GCP monitoring project.</p>
 </div>
-<!-- Project Introduction -->
-<div class="section">
-<h2>Project Introduction</h2>
-<p>
-The goal of this project is to establish a centralized monitoring system for cloud infrastructure that detects performance issues and sends notifications to Cloud Monitoring when predefined thresholds are exceeded. 
-It involves setting up a testing environment in Google Cloud with multiple virtual machines, monitoring their status, and responding to failures via alert policies.
-</p>
-<p>
-This system monitors resource utilization metrics, including CPU and RAM, and checks the uptime of virtual machines. Alerts are triggered when these metrics exceed set thresholds, ensuring that any issues are detected early and can be addressed immediately.
-</p>
+<aside class="vm">
+<div class="vm-label">Current VM</div>
+<div class="vm-main"><strong>$HOSTNAME</strong></div>
+<div class="vm-detail">IP: $(hostname -I) · GCE instance</div>
+</aside>
+</header>
+<section class="grid">
+<article class="card">
+<div class="card-header">
+<h2 class="card-title">Project overview</h2>
+<span class="tag">GCP · Monitoring</span>
 </div>
-<!-- CPU Alert Section -->
-<div class="section">
-<h2>CPU Usage Monitoring</h2>
-<p class="alert">Alert: CPU usage exceeds 80% for 5 minutes!</p>
-<!-- CPU Chart -->
+<div class="card-body">
+<p>This VM is part of a demo environment for <strong>centralized monitoring and alerting</strong> in Google Cloud. Metrics and logs from multiple instances are used to detect issues early and notify on-call engineers.</p>
+<ul class="list">
+<li>CPU, RAM and <strong>disk usage</strong> are continuously monitored.</li>
+<li>Availability is tracked with <strong>uptime checks</strong> against a health endpoint.</li>
+</ul>
+<div class="highlight">Google Cloud Ops Agent on this VM sends host metrics and logs to Cloud Monitoring, where alerting policies are defined (CPU, memory, disk and uptime alerts).</div>
+<div class="pills">
+<span class="pill"><strong>Stack:</strong> GCE · Nginx · Ops Agent</span>
+<span class="pill"><strong>Metrics:</strong> CPU · RAM · Disk · Uptime</span>
+<span class="pill"><strong>Logs:</strong> Syslog · Nginx access</span>
+</div>
+</div>
+</article>
+<article class="card">
+<div class="card-header">
+<h2 class="card-title">Live VM status</h2>
+<span class="tag">Health check: /healthz</span>
+</div>
+<div class="card-body">
+<div class="stats">
+<div class="stat">
+<div class="stat-label">Uptime status</div>
+<div class="stat-main"><span class="ok">OK</span></div>
+<div class="th">Last successful uptime check: <strong>60s</strong> ago.</div>
+</div>
+<div class="stat">
+<div class="stat-label">Disk usage (root filesystem)</div>
+<div class="stat-main"><span class="ok">72% used</span></div>
+<div class="th">Example disk alert when usage exceeds <strong>90%</strong> for <strong>5 minutes</strong>.</div>
+</div>
+</div>
+<div class="health">
+<div>
+<div class="stat-label">Service health</div>
+<div class="stat-main"><span class="ok">Nginx responding on port 80</span></div>
+</div>
+<div class="health-right">Health endpoint: <code>/healthz</code></div>
+</div>
+<p class="note">This instance is one of several VMs. When any VM fails or crosses thresholds, <code>Cloud Monitoring</code> triggers alerts through configured notification channels.</p>
+</div>
+</article>
+</section>
+<section class="grid">
+<article class="card">
+<div class="card-header">
+<h2 class="card-title">CPU usage</h2>
+<span class="tag">Alert &gt; 80% for 5 min</span>
+</div>
+<div class="card-body">
 <canvas id="cpuChart"></canvas>
+<p class="th">Example CPU utilization over the last 10 minutes for this VM. In the real setup, this visual represents data coming from Cloud Monitoring.</p>
 </div>
-<!-- RAM Alert Section -->
-<div class="section">
-<h2>RAM Usage Monitoring</h2>
-<p class="alert">Alert: RAM usage exceeds 70% for 2 minutes!</p>
-<!-- RAM Chart -->
+</article>
+<article class="card">
+<div class="card-header">
+<h2 class="card-title">RAM usage</h2>
+<span class="tag">Alert &gt; 70% for 2 min</span>
+</div>
+<div class="card-body">
 <canvas id="ramChart"></canvas>
+<p class="th">Example RAM usage trend. Crossing the threshold for a sustained period fires a memory pressure alert.</p>
 </div>
-<!-- Uptime Check -->
-<div class="section">
-<h2>Uptime Monitoring</h2>
-<p><strong>Uptime Status:</strong> <span class="status uptime-status">OK</span></p>
-<p>Last Uptime Check: 60 seconds ago</p>
-<p class="alert">Alert: VM is down for more than 3 minutes!</p>
-</div>
-<!-- Syslog Errors -->
-<div class="section">
-<h2>Syslog Error Monitoring</h2>
-<p><strong>Recent Syslog Errors:</strong> <span class="status syslog-errors">2</span></p>
-<p class="alert">Alert: Syslog errors exceed threshold!</p>
-</div>
-<!-- Health Check -->
-<div class="healthz">
-<p>Status: <strong class="ok">OK</strong></p>
-</div>
-</div>
+</article>
+</section>
+</section>
+</main>
 <script>
-const ctx1 = document.getElementById('cpuChart').getContext('2d');
-const cpuChart = new Chart(ctx1, {
-type: 'bar',
-data: {
-labels: ['CPU Usage'],
-datasets: [{
-label: 'CPU Usage (%)',
-data: [80], // Example CPU usage, can be dynamically updated
-backgroundColor: ['rgba(255, 99, 132, 0.2)'],
-borderColor: ['rgba(255, 99, 132, 1)'],
-borderWidth: 1
-}]
-},
-options: {
+const labels = ["-9m","-8m","-7m","-6m","-5m","-4m","-3m","-2m","-1m","now"];
+const cpuData = [22,35,30,45,58,63,79,88,84,76];
+const ramData = [48,51,55,60,64,67,70,72,69,66];
+const cpuThreshold = 80;
+const ramThreshold = 70;
+const baseOptions = {
+responsive: true,
+maintainAspectRatio: false,
 scales: {
 y: {
 beginAtZero: true,
-max: 100
+max: 100,
+ticks: {
+color: "#9ca3af",
+font: { size: 10 }
+},
+grid: {
+color: "rgba(148,163,184,.25)"
+}
+},
+x: {
+ticks: {
+color: "#9ca3af",
+font: { size: 10 }
+},
+grid: {
+display: false
+}
+}
+},
+plugins: {
+legend: {
+labels: {
+color: "#e5e7eb",
+font: { size: 11 }
 }
 }
 }
+};
+const cpuCtx = document.getElementById("cpuChart").getContext("2d");
+new Chart(cpuCtx, {
+type: "line",
+data: {
+labels: labels,
+datasets: [
+{
+label: "CPU usage (%)",
+data: cpuData,
+borderWidth: 2,
+tension: 0.35
+},
+{
+label: "Alert threshold (80%)",
+data: labels.map(() => cpuThreshold),
+borderWidth: 1,
+borderDash: [5,4]
+}
+]
+},
+options: baseOptions
 });
-const ctx2 = document.getElementById('ramChart').getContext('2d');
-const ramChart = new Chart(ctx2, {
-type: 'bar',
+const ramCtx = document.getElementById("ramChart").getContext("2d");
+new Chart(ramCtx, {
+type: "line",
 data: {
-labels: ['RAM Usage'],
-datasets: [{
-label: 'RAM Usage (%)',
-data: [70], // Example RAM usage, can be dynamically updated
-backgroundColor: ['rgba(54, 162, 235, 0.2)'],
-borderColor: ['rgba(54, 162, 235, 1)'],
-borderWidth: 1
-}]
+labels: labels,
+datasets: [
+{
+label: "RAM usage (%)",
+data: ramData,
+borderWidth: 2,
+tension: 0.35
 },
-options: {
-scales: {
-y: {
-beginAtZero: true,
-max: 100
+{
+label: "Alert threshold (70%)",
+data: labels.map(() => ramThreshold),
+borderWidth: 1,
+borderDash: [5,4]
 }
-}
-}
+]
+},
+options: baseOptions
 });
 </script>
 </body>
 </html>
 EOF
 
+
 echo "OK" > /var/www/html/healthz
 chmod -R 755 /var/www/html
 
 echo "OK" > /var/www/html/healthz
 chmod -R 755 /var/www/html
+
 
 curl -sSO https://dl.google.com/cloudagents/add-google-cloud-ops-agent-repo.sh
 sudo bash add-google-cloud-ops-agent-repo.sh --also-install
 sudo apt list --installed | grep google-cloud-ops-agent
 
 sudo mkdir -p /etc/google-cloud-ops-agent/config.d
-sudo bash -c 'cat << EOF > /etc/google-cloud-ops-agent/config.d/syslog-errors.yaml
+
+sudo bash -c 'cat << EOF > /etc/google-cloud-ops-agent/config.d/metrics.yaml
 ---
-logging:
-  receivers:
-    syslog:
-      type: files
-      include_paths:
-        - /var/log/syslog
-  processors:
-    severity_filter:
-      type: severity
-      severity_levels: ["ERROR", "CRITICAL", "WARNING"]
-
-  service:
-    pipelines:
-      default_pipeline:
-        receivers: [syslog]
-        processors: [severity_filter]
-
 metrics:
   receivers:
     hostmetrics:
       type: hostmetrics
-  service:
-    pipelines:
-      default_pipeline:
-        receivers: [hostmetrics]
+    service:
+      pipelines:
+        default_pipeline:
+          receivers: [hostmetrics]
 EOF'
 
-sudo bash -c 'cat << EOF > /etc/google-cloud-ops-agent/config.yaml
+sudo bash -c 'cat << EOF > /etc/google-cloud-ops-agent/config.d/nginx-logs.yaml
 ---
 logging:
   receivers:
-    nginx_access:
-      type: nginx_access
-      include_paths: 
-        - /var/log/nginx/access.log
+    type: nginx_access
+    include_paths:
+      - /var/log/nginx/access.log
   service:
     pipelines:
       nginx_pipeline:
         receivers: [nginx_access]
+EOF'
 
-metrics:
+sudo bash -c 'cat << EOF > /etc/google-cloud-ops-agent/config.d/syslog-logs.yaml
+---
+logging:
   receivers:
-    hostmetrics:
-      type: hostmetrics
+    syslog_receiver:
+      type: files
+      include_paths:
+        - /var/log/syslog
+
+  processors:
+    syslog_parser:
+      type: syslog
+    
+    severity_filter:
+      type: severity
+      severity_levels: ["CRITICAL", "ERROR", "WARNING"]
+
   service:
     pipelines:
       default_pipeline:
-        receivers: [hostmetrics]
+        receivers: [syslog_receiver]
+        processors: [syslog_parser, severity_filter]
 EOF'
 
 sudo service google-cloud-ops-agent restart
