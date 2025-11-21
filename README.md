@@ -813,13 +813,13 @@ stress --cpu 6 --timeout 400s
 <br>**Received email**: 
 <br>Notification email received indicating high CPU usage on the affected VMs. Severity warning as per code expectations.
 
-<br><br><img width="704" height="644" alt="image" src="https://github.com/user-attachments/assets/81ffb586-51d8-4408-bf91-9bc0da824a44" />
-<br><br><img width="735" height="655" alt="image" src="https://github.com/user-attachments/assets/4f2e4358-b2a4-425c-9b9c-9d9ff05d32a3" />
+<br><br><img width="300" alt="image" src="https://github.com/user-attachments/assets/81ffb586-51d8-4408-bf91-9bc0da824a44" />
+<br><br><img width="300" alt="image" src="https://github.com/user-attachments/assets/4f2e4358-b2a4-425c-9b9c-9d9ff05d32a3" />
 
 
 After the stress test ended, the alert cleared and a recovery notification was sent to the configured email.
-<br><br><img width="742" height="623" alt="image" src="https://github.com/user-attachments/assets/24eacb2c-660a-4437-ab47-6a7f14d8b8e2" />
-<br><br><img width="694" height="642" alt="image" src="https://github.com/user-attachments/assets/1e5dcc38-6cb4-4cf6-8a0f-97197e551190" />
+<br><br><img width="300" alt="image" src="https://github.com/user-attachments/assets/24eacb2c-660a-4437-ab47-6a7f14d8b8e2" />
+<br><br><img width="300" alt="image" src="https://github.com/user-attachments/assets/1e5dcc38-6cb4-4cf6-8a0f-97197e551190" />
 
 
 
@@ -859,9 +859,9 @@ EOF
 
 <br>**Received emails**: 
 <br>A notification email was received indicating high RAM utilization on the affected VM.
-<br><br><img width="682" height="643" alt="image" src="https://github.com/user-attachments/assets/c6881c1a-b3eb-4d76-a7f6-7b9079c87c49" />
+<br><br><img width="300" alt="image" src="https://github.com/user-attachments/assets/c6881c1a-b3eb-4d76-a7f6-7b9079c87c49" />
 <br><br>Shortly after, a recovery alert was sent.
-<br><br><img width="721" height="634" alt="image" src="https://github.com/user-attachments/assets/604c19c9-0ed8-4269-b00f-f626502295e6" />
+<br><br><img width="300" alt="image" src="https://github.com/user-attachments/assets/604c19c9-0ed8-4269-b00f-f626502295e6" />
 
 
 **3. Failed uptime check test**
@@ -876,10 +876,10 @@ EOF
 
 <br>**Received emails**: 
 <br>I received 6 emails from different pods reporting the issue. This time the issue has severity of an error as visible on the screenshot.
-<br><br><img width="738" height="654" alt="image" src="https://github.com/user-attachments/assets/b90b72a5-dfc7-4603-ac94-7e388492b29b" />
+<br><br><img width="300" alt="image" src="https://github.com/user-attachments/assets/b90b72a5-dfc7-4603-ac94-7e388492b29b" />
 
 <br><br>A successful recovery email was sent a few minutes later.
-<br><br><img width="701" height="679" alt="image" src="https://github.com/user-attachments/assets/361ecc54-9d97-489c-ba78-53be98237c41" />
+<br><br><img width="300" alt="image" src="https://github.com/user-attachments/assets/361ecc54-9d97-489c-ba78-53be98237c41" />
 
 
 
@@ -901,9 +901,9 @@ fallocate -l 8G /tmp/testfile1
 
 <br>**Received emails**:
 <br>A notification email was received indicating high disk usage on the affected VM.
-<br><br><img width="681" height="643" alt="image" src="https://github.com/user-attachments/assets/689a07b6-d52f-4448-8f79-a017307e9908" />
+<br><br><img width="300" alt="image" src="https://github.com/user-attachments/assets/689a07b6-d52f-4448-8f79-a017307e9908" />
 
 <br>Shortly after, a recovery alert was sent once the test file was removed and disk usage dropped below the threshold.
-<br><br><img width="729" height="610" alt="image" src="https://github.com/user-attachments/assets/f99bf07f-c03d-4b73-bf1c-6ea8c821871e" />
+<br><br><img width="300" alt="image" src="https://github.com/user-attachments/assets/f99bf07f-c03d-4b73-bf1c-6ea8c821871e" />
 
 
