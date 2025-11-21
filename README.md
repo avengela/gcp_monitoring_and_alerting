@@ -1,11 +1,11 @@
-<img width="1141" height="832" alt="obraz" src="https://github.com/user-attachments/assets/baba9e14-6da9-45d0-9453-552765d94c2c" />This project is part of an assignment for Project Level Up – Advanced ICT Skills Academy for Women, Topic 7: Monitoring and Alerting for Multi-VM Environment.
+This project is part of an assignment for Project Level Up – Advanced ICT Skills Academy for Women, Topic 7: Monitoring and Alerting for Multi-VM Environment.
 
 # Monitoring and Alerting for Multi-VM Environment
 The goal of this project is to set up a central infrastructure monitoring system that detects failures and sends notifications to Cloud Monitoring. 
 The project involves creating a test environment in Google Cloud with several virtual machines, 
 monitoring their status, and responding to failures through alerts.
 
-### Project visualization added to the startup script as an automatically generated monitoring dashboard accessible through the VM's external IP address. 
+### Project visualization added to the startup script as an automatically generated monitoring dashboard accessible through the VM's external IP address:
 <img width="1141" height="832" alt="obraz" src="https://github.com/user-attachments/assets/f36322cc-5fd3-45ac-b700-5c39f2977eea" />
 
 ## Architecture
@@ -765,7 +765,7 @@ The VM Monitoring Dashboard provides a centralized view of the key metrics and l
 <br>**Metric**: agent.googleapis.com/cpu/utilization
 <br>**Purpose**: Shows how much CPU is actively used per VM, excluding idle CPU.
 <br>**Threshold**: 80% CPU usage triggers high alert.
-<br><br><img width="1132" height="475" alt="image" src="https://github.com/user-attachments/assets/b38e0bf7-f5e2-4188-8b8f-be760b526575" />
+<br><br><img width="600" alt="image" src="https://github.com/user-attachments/assets/b38e0bf7-f5e2-4188-8b8f-be760b526575" />
 
 **2. RAM Usage per VM**
 <br>**Metric**: agent.googleapis.com/memory/percent_used
