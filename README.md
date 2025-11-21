@@ -101,7 +101,7 @@ variable "oslogin_user_email" {
 ```
 
 ### [main.tf](terraform/main.tf)
-The **main.tf** file containsthe key configuration for Terraform, 
+The **main.tf** file contains the key configuration for Terraform, 
 including the tool version, Google Cloud provider configuration and resources that need to be created to prepare the environment.
 
 This fragment sets the version requirements for Terraform and the Google Cloud provider:
@@ -170,7 +170,7 @@ resource "google_compute_project_metadata" "oslogin" {
 
 ### [network.tf](terraform/network.tf)
 The **network.tf** file is responsible for configuring the network in Google Cloud, 
-including creating a virtual private network (VPC), subnets and firewall rules (rule allowing HTTP access and rule allowing SSH access)
+including creating a virtual private network (VPC), subnets and firewall rules (rule allowing HTTP access and rule allowing SSH access).
 
 ```bash
 resource "google_compute_network" "vpc"{
@@ -717,7 +717,7 @@ This widget monitors the uptime check status per VM. It tracks whether the VM is
 ```
 **Disk Usage per VM Widget**
 
-This widget monitors the disk usage per VM for the /dev/sda1 partition. It tracks how much of the disk space is udes on each VM. 
+This widget monitors the disk usage per VM for the /dev/sda1 partition. It tracks how much of the disk space is used on each VM. 
 
 ```bash
         {
