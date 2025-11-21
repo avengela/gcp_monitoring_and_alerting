@@ -765,7 +765,7 @@ The VM Monitoring Dashboard provides a centralized view of the key metrics and l
 <br>**Metric**: agent.googleapis.com/cpu/utilization
 <br>**Purpose**: Shows how much CPU is actively used per VM, excluding idle CPU.
 <br>**Threshold**: 80% CPU usage triggers high alert.
-<br><br><img width="600" alt="image" src="https://github.com/user-attachments/assets/b38e0bf7-f5e2-4188-8b8f-be760b526575" />
+<br><br><img width="1117" alt="image" src="https://github.com/user-attachments/assets/b38e0bf7-f5e2-4188-8b8f-be760b526575" />
 
 **2. RAM Usage per VM**
 <br>**Metric**: agent.googleapis.com/memory/percent_used
@@ -812,15 +812,22 @@ stress --cpu 6 --timeout 400s
 
 <br>**Received email**: 
 <br>Notification email received indicating high CPU usage on the affected VMs. Severity warning as per code expectations.
-
+<div align="center">
 <br><br><img width="500" alt="image" src="https://github.com/user-attachments/assets/81ffb586-51d8-4408-bf91-9bc0da824a44" />
-<br><br><img width="500" alt="image" src="https://github.com/user-attachments/assets/4f2e4358-b2a4-425c-9b9c-9d9ff05d32a3" />
+</div>
 
+<div align="center">
+<br><br><img width="500" alt="image" src="https://github.com/user-attachments/assets/4f2e4358-b2a4-425c-9b9c-9d9ff05d32a3" />
+</div>
 
 After the stress test ended, the alert cleared and a recovery notification was sent to the configured email.
+<div align="center">
 <br><br><img width="500" alt="image" src="https://github.com/user-attachments/assets/24eacb2c-660a-4437-ab47-6a7f14d8b8e2" />
-<br><br><img width="500" alt="image" src="https://github.com/user-attachments/assets/1e5dcc38-6cb4-4cf6-8a0f-97197e551190" />
+</div>
 
+<div align="center">
+<br><br><img width="500" alt="image" src="https://github.com/user-attachments/assets/1e5dcc38-6cb4-4cf6-8a0f-97197e551190" />
+</div>
 
 
 **2. High RAM utilization test**
@@ -859,10 +866,13 @@ EOF
 
 <br>**Received emails**: 
 <br>A notification email was received indicating high RAM utilization on the affected VM.
+<div align="center">
 <br><br><img width="500" alt="image" src="https://github.com/user-attachments/assets/c6881c1a-b3eb-4d76-a7f6-7b9079c87c49" />
+</div>
 <br><br>Shortly after, a recovery alert was sent.
+<div align="center">
 <br><br><img width="500" alt="image" src="https://github.com/user-attachments/assets/604c19c9-0ed8-4269-b00f-f626502295e6" />
-
+</div>
 
 **3. Failed uptime check test**
 <br>**Test execution**: 
@@ -876,11 +886,13 @@ EOF
 
 <br>**Received emails**: 
 <br>I received 6 emails from different pods reporting the issue. This time the issue has severity of an error as visible on the screenshot.
+<div align="center">
 <br><br><img width="500" alt="image" src="https://github.com/user-attachments/assets/b90b72a5-dfc7-4603-ac94-7e388492b29b" />
-
+</div>
 <br><br>A successful recovery email was sent a few minutes later.
+<div align="center">
 <br><br><img width="500" alt="image" src="https://github.com/user-attachments/assets/361ecc54-9d97-489c-ba78-53be98237c41" />
-
+</div>
 
 
 **4. High disk usage test**
@@ -901,9 +913,12 @@ fallocate -l 8G /tmp/testfile1
 
 <br>**Received emails**:
 <br>A notification email was received indicating high disk usage on the affected VM.
+<div align="center">
 <br><br><img width="500" alt="image" src="https://github.com/user-attachments/assets/689a07b6-d52f-4448-8f79-a017307e9908" />
-
+</div>
 <br>Shortly after, a recovery alert was sent once the test file was removed and disk usage dropped below the threshold.
+<div align="center">
 <br><br><img width="500" alt="image" src="https://github.com/user-attachments/assets/f99bf07f-c03d-4b73-bf1c-6ea8c821871e" />
+</div>
 
 
