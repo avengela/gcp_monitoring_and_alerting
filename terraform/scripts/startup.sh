@@ -264,7 +264,7 @@ font-size: 11px;
 <div class="stat">
 <div class="stat-label">Disk usage (root filesystem)</div>
 <div class="stat-main"><span class="ok">72% used</span></div>
-<div class="th">Example disk alert when usage exceeds <strong>90%</strong> for <strong>5 minutes</strong>.</div>
+<div class="th">Example disk alert when usage exceeds <strong>80%</strong> for <strong>60 seconds</strong>.</div>
 </div>
 </div>
 <div class="health">
@@ -391,13 +391,8 @@ options: baseOptions
 </html>
 EOF
 
-
 echo "OK" > /var/www/html/healthz
 chmod -R 755 /var/www/html
-
-echo "OK" > /var/www/html/healthz
-chmod -R 755 /var/www/html
-
 
 curl -sSO https://dl.google.com/cloudagents/add-google-cloud-ops-agent-repo.sh
 sudo bash add-google-cloud-ops-agent-repo.sh --also-install
