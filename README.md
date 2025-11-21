@@ -812,6 +812,7 @@ stress --cpu 6 --timeout 400s
 
 <br>**Received email**: 
 <br>Notification email received indicating high CPU usage on the affected VMs. Severity warning as per code expectations.
+
 <div align="center">
 <br><br><img width="500" alt="image" src="https://github.com/user-attachments/assets/81ffb586-51d8-4408-bf91-9bc0da824a44" />
 </div>
@@ -819,6 +820,7 @@ stress --cpu 6 --timeout 400s
 <div align="center">
 <br><br><img width="500" alt="image" src="https://github.com/user-attachments/assets/4f2e4358-b2a4-425c-9b9c-9d9ff05d32a3" />
 </div>
+
 
 After the stress test ended, the alert cleared and a recovery notification was sent to the configured email.
 <div align="center">
@@ -828,6 +830,8 @@ After the stress test ended, the alert cleared and a recovery notification was s
 <div align="center">
 <br><br><img width="500" alt="image" src="https://github.com/user-attachments/assets/1e5dcc38-6cb4-4cf6-8a0f-97197e551190" />
 </div>
+
+
 
 
 **2. High RAM utilization test**
