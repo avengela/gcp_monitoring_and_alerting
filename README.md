@@ -1,9 +1,12 @@
-This project is part of an assignment for Project Level Up – Advanced ICT Skills Academy for Women, Topic 7: Monitoring and Alerting for Multi-VM Environment.
+<img width="1141" height="832" alt="obraz" src="https://github.com/user-attachments/assets/baba9e14-6da9-45d0-9453-552765d94c2c" />This project is part of an assignment for Project Level Up – Advanced ICT Skills Academy for Women, Topic 7: Monitoring and Alerting for Multi-VM Environment.
 
 # Monitoring and Alerting for Multi-VM Environment
 The goal of this project is to set up a central infrastructure monitoring system that detects failures and sends notifications to Cloud Monitoring. 
 The project involves creating a test environment in Google Cloud with several virtual machines, 
 monitoring their status, and responding to failures through alerts.
+
+### Project visualization added to the startup script as an automatically generated monitoring dashboard accessible through the VM's external IP address. 
+<img width="1141" height="832" alt="obraz" src="https://github.com/user-attachments/assets/f36322cc-5fd3-45ac-b700-5c39f2977eea" />
 
 ## Architecture
 ```
@@ -429,7 +432,7 @@ resource "google_monitoring_notification_channel" "main_email" {
     }
 }
 ```
-#### Alerts
+### Alerts
 
 1. **High CPU Utilization Alert**
    
@@ -806,7 +809,6 @@ stress --cpu 6 --timeout 400s
 <br><br><img width="1122" height="470" alt="image" src="https://github.com/user-attachments/assets/fde5fea7-8474-42dd-980c-5ef3e1491044" />
 <br><br>After the spike, the email alert appeared on the dashboard.
 <br><br><img width="1228" height="561" alt="Screenshot 2025-11-20 211328" src="https://github.com/user-attachments/assets/4e91c6b8-95d7-4dda-a4c9-cb3571764db1" />
-
 
 <br>**Received email**: 
 <br>Notification email received indicating high CPU usage on the affected VMs. Severity warning as per code expectations.
